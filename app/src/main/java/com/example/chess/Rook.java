@@ -1,7 +1,9 @@
 package com.example.chess;
 
 public class Rook extends Piece {
+
     private short value = 5;
+    public boolean moved = false;
 
     public Rook(boolean colour) {
         super(colour);

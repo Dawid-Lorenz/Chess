@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
@@ -23,6 +22,8 @@ public class Player extends AppCompatActivity {
     ImageButton[][] board = new ImageButton[8][8];
 
     Piece nuller = new Piece();
+    Piece enPassantPosition = nuller;
+//    Piece enPassant = new Piece();
     Piece selected = nuller;
 
     boolean player = true;
@@ -202,8 +203,84 @@ public class Player extends AppCompatActivity {
 
     private boolean isMoveLegal(boolean player, @org.jetbrains.annotations.NotNull Piece p, ArrayList<Piece> pieces, byte x, byte y)
     {
-        if (!p.isMoveAllowed(x, y) && !p.isAttackAllowed(x, y) || player != p.isColour())
+        if (p instanceof King)
+        {
+            if (player != p.isColour())
+                return false;
+
+            if ((player && x == 7 || !player && x == 0) && (y == 2 || y == 6) &&  !((King) p).moved && !isInCheck(player))
+            {
+                byte firstRank = player ? (byte)7 : 0;
+                boolean canCastle = true;
+                Rook rook = new Rook(player);
+                for (Piece blocker : pieces)
+                {
+                    if(y == 2)
+                    {
+                        if (blocker.getX() == firstRank && (blocker.getY() > 0 && blocker.getY() <= 3))
+                        {
+                            return false;
+                        }
+                        if (blocker instanceof Rook && blocker.getY() == 0)
+                            rook = (Rook) blocker;
+                    }
+                    else
+                    {
+                        if (blocker.getX() == firstRank && (blocker.getY() == 5 || blocker.getY() == 6))
+                        {
+                            return false;
+                        }
+                        if (blocker instanceof Rook && blocker.getY() == 7)
+                            rook = (Rook) blocker;
+                    }
+                }
+
+                if (rook.moved)
+                    return false;
+
+                if (y == 2)
+                {
+                    selected.setY((byte)3);
+                    if (isInCheck(player))
+                    {
+                        selected.setY((byte)4);
+                        return false;
+                    }
+                    selected.setY((byte)2);
+                    if (isInCheck(player))
+                    {
+                        selected.setY((byte)4);
+                        return false;
+                    }
+                    selected.setY((byte)4);
+                    return true;
+                }
+                else
+                {
+                    selected.setY((byte)5);
+                    if (isInCheck(player))
+                    {
+                        selected.setY((byte)4);
+                        return false;
+                    }
+                    selected.setY((byte)6);
+                    if (isInCheck(player))
+                    {
+                        selected.setY((byte)4);
+                        return false;
+                    }
+                    selected.setY((byte)4);
+                    return true;
+                }
+            }
+        }
+        else if (!p.isMoveAllowed(x, y) && !p.isAttackAllowed(x, y) || player != p.isColour())
             return false;
+        else if (enPassantPosition != nuller && p instanceof Pawn)
+        {
+            if (enPassantPosition.getX() == x && enPassantPosition.getY() == y)
+                return p.isAttackAllowed(x,y);
+        }
         else if ((p instanceof Bishop || p instanceof Rook || p instanceof Queen || p instanceof Pawn))
         {
             byte diffX = (byte)(p.getX() - x);
@@ -232,23 +309,43 @@ public class Player extends AppCompatActivity {
                         biffY = (byte)Math.abs(biffY);
 
 
-                        boolean coordCheck = bx == dx && by == dy && biffX < diffX && biffY < diffY;
+                        boolean coordCheck = bx == dx && by == dy; // && biffX < diffX && biffY < diffY;
 
                         if (p instanceof Bishop) {
                             if (biffX == biffY)
-                                if (coordCheck)
+                                if (coordCheck && biffX < diffX && biffY < diffY)
                                     blocked = true;
                         }
                         else if (p instanceof Rook || p instanceof Pawn) {
-                            if (biffX == 0 || biffY == 0)
-                                if (coordCheck)
+                            if (biffX == 0)
+                            {
+                                if (coordCheck && biffY < diffY)
                                     blocked = true;
+                            }
+                            else if (biffY == 0)
+                            {
+                                if (coordCheck && biffX < diffX)
+                                    blocked = true;
+                            }
                         }
                         else
                         {
-                            if (biffX == biffY || biffX == 0 || biffY == 0)
-                                if (coordCheck)
+                            if (biffX == biffY)
+                            {
+                                if (coordCheck && biffX < diffX && biffY < diffY)
                                     blocked = true;
+                            }
+                            else if (biffX == 0 || biffY == 0)
+                                if (biffX == 0)
+                                {
+                                    if (coordCheck && biffY < diffY)
+                                        blocked = true;
+                                }
+                                else if (biffY == 0)
+                                {
+                                    if (coordCheck && biffX < diffX)
+                                        blocked = true;
+                                }
 
                         }
                     }
@@ -307,7 +404,118 @@ public class Player extends AppCompatActivity {
             }
             return true;
         }
+    }
 
+    private void makeMove(ArrayList<Piece> pieces, byte tempX, byte tempY)
+    { // TODO promotion (somewhere xD)
+        boolean resetEnPassant = true;
+
+        byte x = tempX;
+        byte y = tempY;
+
+        if (selected instanceof Pawn)
+        {
+            if (selected.isColour() && selected.getX() == 6 && tempX == 4)
+            {
+                enPassantPosition = new Piece();
+                enPassantPosition.setX((byte)5);
+                enPassantPosition.setY(selected.getY());
+                resetEnPassant = false;
+//                                        enPassantPosition.setColour(true);
+            }
+            else if (!selected.isColour() && selected.getX() == 1 && tempX == 3)
+            {
+                enPassantPosition = new Piece();
+                enPassantPosition.setX((byte)2);
+                enPassantPosition.setY(selected.getY());
+                resetEnPassant = false;
+//                                        enPassantPosition.setColour(false);
+            }
+            else if (enPassantPosition != nuller && enPassantPosition.getX() == tempX && enPassantPosition.getY() == tempY)
+            {
+                if (player)
+                    x = (byte)3;
+                else
+                    x = (byte)4;
+
+            }
+        }
+
+
+        if (selected instanceof King)
+        {
+            byte firstRank;
+            if (selected.isColour())
+            {
+                firstRank = 7;
+            }
+            else
+            {
+                firstRank = 0;
+            }
+
+            if (tempX == firstRank && tempY == 2)
+            {
+                for (Piece p : pieces)
+                    if (p instanceof Rook && p.getX() == firstRank && p.getY() == 0)
+                    {
+                        p.setY((byte)3);
+                    }
+            }
+            else if (tempX == firstRank && tempY == 6)
+            {
+                for (Piece p : pieces)
+                    if (p instanceof Rook && p.getX() == firstRank && p.getY() == 7)
+                    {
+                        p.setY((byte)5);
+                    }
+
+            }
+            ((King) selected).moved = true;
+        }
+        else if (selected instanceof Rook)
+        {
+            ((Rook) selected).moved = true;
+        }
+
+        selected.setX(tempX);
+        selected.setY(tempY);
+
+        Iterator<Piece> iterator = pieces.iterator();
+        Piece p;
+        while (iterator.hasNext())
+        {
+            p = iterator.next();
+            if (p != selected && p.getX() == x && p.getY() == y)
+            {
+                p.setX((byte) -1);
+                p.setY((byte) -1);
+                break;
+            }
+        }
+
+        if (resetEnPassant)
+            enPassantPosition = nuller;
+
+    }
+
+
+    private boolean hasMoves(boolean player, ArrayList<Piece> pieces)
+    {
+        Piece p;
+        Iterator<Piece> iterator = pieces.iterator();
+        while (iterator.hasNext())
+        {
+            p = iterator.next();
+            for (byte i = 0; i < 8; i++)
+                for (byte j = 0; j < 8; j++)
+                    if (isMoveLegal(player, p, pieces, i, j))
+                    {
+                        return true;
+                    }
+        }
+
+        return false;
     }
 
     @Override
@@ -410,6 +618,41 @@ public class Player extends AppCompatActivity {
                         {
                             if(isMoveLegal(player, selected, pieces, tempX, tempY))
                             {
+
+                                /*
+                                boolean resetEnPassant = true;
+
+                                byte x = tempX;
+                                byte y = tempY;
+
+                                if (selected instanceof Pawn)
+                                {
+                                    if (selected.isColour() && selected.getX() == 6 && tempX == 4)
+                                    {
+                                        enPassantPosition = new Piece();
+                                        enPassantPosition.setX((byte)5);
+                                        enPassantPosition.setY(selected.getY());
+                                        resetEnPassant = false;
+//                                        enPassantPosition.setColour(true);
+                                    }
+                                    else if (!selected.isColour() && selected.getX() == 1 && tempX == 3)
+                                    {
+                                        enPassantPosition = new Piece();
+                                        enPassantPosition.setX((byte)2);
+                                        enPassantPosition.setY(selected.getY());
+                                        resetEnPassant = false;
+//                                        enPassantPosition.setColour(false);
+                                    }
+                                    else if (enPassantPosition != nuller && enPassantPosition.getX() == tempX && enPassantPosition.getY() == tempY)
+                                    {
+                                        if (player)
+                                            x = (byte)3;
+                                        else
+                                            x = (byte)4;
+
+                                    }
+                                }
+
                                 selected.setX(tempX);
                                 selected.setY(tempY);
 
@@ -419,7 +662,7 @@ public class Player extends AppCompatActivity {
                                 while (iterator.hasNext())
                                 {
                                     p = iterator.next();
-                                    if (p != selected && p.getX() == tempX && p.getY() == tempY)
+                                    if (p != selected && p.getX() == x && p.getY() == y)
                                     {
                                         p.setX((byte) -1);
                                         p.setY((byte) -1);
@@ -427,89 +670,18 @@ public class Player extends AppCompatActivity {
                                     }
                                 }
                                 iterator = pieces.iterator();
-                                while (iterator.hasNext())
-                                {
-                                    p = iterator.next();
-                                        for (byte i = 0; i < 8 && !moves; i++)
-                                            for (byte j = 0; j < 8 && !moves; j++)
-                                                if (isMoveLegal(!player, p, pieces, i, j))
-                                                {
-                                                    moves = true;
-                                                }
-                                }
+                                */
+
+
+                                makeMove(pieces, tempX, tempY);
+
+
+                                Iterator<Piece> iterator = pieces.iterator();
+
                                 if (isInCheck(!player))
                                 {
-                                    /*
-                                    moves = false;
 
-                                    // first check if we can block a blockable piece:
-                                    if (selected instanceof Bishop ||
-                                        selected instanceof Rook || selected instanceof Queen)
-                                    {
-
-                                        Piece checked = player ? kingB : kingW;
-
-                                        byte diffX = (byte)(selected.getX() - checked.getX());
-                                        byte diffY = (byte)(selected.getY() - checked.getY());
-
-                                        byte dx = (byte)(diffX >= 0 ? (diffX == 0 ? 0 : 1) : -1);
-                                        byte dy = (byte)(diffY >= 0 ? (diffY == 0 ? 0 : 1) : -1);
-
-                                        diffX = (byte)Math.abs(diffX);
-                                        diffY = (byte)Math.abs(diffY);
-
-                                        boolean blocked = false;
-
-                                        for (Piece blocker : pieces)
-                                        {
-                                            if (blocker.isColour() == !player)
-                                                if (blocker != checked)
-                                                {
-                                                    byte biffX = (byte)(selected.getX() - checked.getX());
-                                                    byte biffY = (byte)(selected.getY() - checked.getY());
-
-                                                    byte bx = (byte)(biffX >= 0 ? (biffX == 0 ? 0 : 1) : -1);
-                                                    byte by = (byte)(biffY >= 0 ? (biffY == 0 ? 0 : 1) : -1);
-
-                                                    biffX = (byte)Math.abs(biffX);
-                                                    biffY = (byte)Math.abs(biffY);
-
-                                                    // loop through all the intermittent positions and check if the blocker can block it
-
-                                                    byte tempX = checked.getX();
-                                                    byte tempY = checked.getY();
-
-                                                    while ((tempX += bx) != selected.getX() && (tempY += by) != selected.getY())
-                                                    {
-                                                        if (isMoveLegal(blocker, pieces, tempX, tempY))
-                                                        {
-                                                            moves = true;
-                                                            break;
-                                                        }
-                                                    }
-
-
-
-
-                                                }
-
-                                            if (moves)
-                                                break;
-                                        }
-
-                                    }
-
-                                    for (Piece savouir : pieces)
-                                    {
-                                        if (moves)
-                                            break;
-                                        if (isMoveLegal(savouir, pieces, selected.getX(), selected.getY()))
-                                            moves = true;
-                                    }
-
-                                     */
-
-                                    if(!moves)
+                                    if(!hasMoves(!player, pieces))
                                     {
                                         CharSequence message;
                                         if (player)
@@ -532,7 +704,7 @@ public class Player extends AppCompatActivity {
                                                 .show();
                                     }
                                 }
-                                else if (!moves)
+                                else if (!hasMoves(!player, pieces))
                                     new AlertDialog.Builder(Player.this)
                                             .setTitle("Game over")
                                             .setMessage("Stalemate!")
@@ -550,6 +722,8 @@ public class Player extends AppCompatActivity {
 
                                 player = !player;
                             }
+
+
                             selected = nuller;
                         }
                         else
