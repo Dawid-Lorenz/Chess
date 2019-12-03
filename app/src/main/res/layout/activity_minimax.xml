@@ -1,0 +1,656 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Minimax">
+
+    <TableLayout
+        android:id="@+id/board"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_marginTop="160dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/black"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/black"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/black"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/black"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/black"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/white"
+                android:padding="0dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/empty"
+                android:visibility="visible" />
+
+
+        </TableRow>
+
+
+    </TableLayout>
+
+    <Button
+        android:id="@+id/moveBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="144dp"
+        android:layout_marginLeft="144dp"
+        android:layout_marginBottom="64dp"
+        android:text="Make a move!"
+        app:layout_constraintBottom_toTopOf="@+id/board"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

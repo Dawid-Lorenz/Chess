@@ -7,15 +7,17 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TableLayout;
 import android.widget.TableRow;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class Player extends AppCompatActivity {
-
+public class Minimax extends AppCompatActivity
+{
     ArrayList<Piece> pieces = new ArrayList<>();
     ArrayList<Piece> taken = new ArrayList<>();
 
@@ -23,8 +25,10 @@ public class Player extends AppCompatActivity {
 
     Piece nuller = new Piece();
     Piece enPassantPosition = nuller;
-//    Piece enPassant = new Piece();
+    //    Piece enPassant = new Piece();
     Piece selected = nuller;
+    Piece bestPiece = nuller;
+    byte bestX = -1, bestY = -1;
 
     boolean player = true;
 
@@ -141,7 +145,7 @@ public class Player extends AppCompatActivity {
                         p.isAttackAllowed(checked.getX(),checked.getY()))
                     return true;
                 else if ((p instanceof Bishop || p instanceof Rook || p instanceof Queen)
-                    && p.isAttackAllowed(checked.getX(),checked.getY()))
+                        && p.isAttackAllowed(checked.getX(),checked.getY()))
                 {
                     byte diffX = (byte)(p.getX() - checked.getX());
                     byte diffY = (byte)(p.getY() - checked.getY());
@@ -155,42 +159,42 @@ public class Player extends AppCompatActivity {
                     boolean blocked = false;
 
 //                    if ((diffX > 1 || diffX < -1) && (diffY > 1 || diffY < -1))
-                        for (Piece blocker : pieces)
+                    for (Piece blocker : pieces)
+                    {
+                        if (blocker != checked && blocker != p)
                         {
-                            if (blocker != checked && blocker != p)
+                            byte biffX = (byte)(p.getX() - blocker.getX());
+                            byte biffY = (byte)(p.getY() - blocker.getY());
+
+                            byte bx = (byte)(biffX >= 0 ? (biffX == 0 ? 0 : 1) : -1);
+                            byte by = (byte)(biffY >= 0 ? (biffY == 0 ? 0 : 1) : -1);
+
+                            biffX = (byte)Math.abs(biffX);
+                            biffY = (byte)Math.abs(biffY);
+
+                            boolean coordCheck = bx == dx && by == dy && biffX <= diffX && biffY <= diffY;
+
+                            if (p instanceof Bishop) {
+                                if (biffX == biffY)
+                                    if (coordCheck)
+                                        blocked = true;
+                            }
+                            else if (p instanceof Rook) {
+                                if (biffX == 0 || biffY == 0)
+                                    if (coordCheck)
+                                        blocked = true;
+                            }
+                            else
                             {
-                                byte biffX = (byte)(p.getX() - blocker.getX());
-                                byte biffY = (byte)(p.getY() - blocker.getY());
-
-                                byte bx = (byte)(biffX >= 0 ? (biffX == 0 ? 0 : 1) : -1);
-                                byte by = (byte)(biffY >= 0 ? (biffY == 0 ? 0 : 1) : -1);
-
-                                biffX = (byte)Math.abs(biffX);
-                                biffY = (byte)Math.abs(biffY);
-
-                                boolean coordCheck = bx == dx && by == dy && biffX <= diffX && biffY <= diffY;
-
-                                if (p instanceof Bishop) {
-                                    if (biffX == biffY)
-                                        if (coordCheck)
-                                            blocked = true;
-                                }
-                                else if (p instanceof Rook) {
-                                    if (biffX == 0 || biffY == 0)
-                                        if (coordCheck)
-                                            blocked = true;
-                                }
-                                else
-                                {
-                                    if (biffX == biffY || biffX == 0 || biffY == 0)
-                                        if (coordCheck)
-                                            blocked = true;
-
-                                }
-
+                                if (biffX == biffY || biffX == 0 || biffY == 0)
+                                    if (coordCheck)
+                                        blocked = true;
 
                             }
+
+
                         }
+                    }
 
                     if (!blocked)
                         return true;
@@ -203,6 +207,7 @@ public class Player extends AppCompatActivity {
 
     private boolean isMoveLegal(boolean player, @org.jetbrains.annotations.NotNull Piece p, ArrayList<Piece> pieces, byte x, byte y)
     {
+        pieces = copyList(pieces);
         if (p instanceof King)
         {
             if (player != p.isColour())
@@ -213,8 +218,11 @@ public class Player extends AppCompatActivity {
                 byte firstRank = player ? (byte)7 : 0;
                 boolean canCastle = true;
                 Rook rook = new Rook(player);
-                for (Piece blocker : pieces)
+                Iterator<Piece> iterator = pieces.iterator();
+                Piece blocker;
+                while (iterator.hasNext())
                 {
+                    blocker = iterator.next();
                     if(y == 2)
                     {
                         if (blocker.getX() == firstRank && (blocker.getY() > 0 && blocker.getY() <= 3))
@@ -294,9 +302,13 @@ public class Player extends AppCompatActivity {
 
             boolean blocked = false;
 
+            Iterator<Piece> iterator = pieces.iterator();
+            Piece blocker;
+
             if ((diffX > 1 || diffX < -1) || (diffY > 1 || diffY < -1))
-                for (Piece blocker : pieces)
+                while (iterator.hasNext())
                 {
+                    blocker = iterator.next();
                     if (blocker != p)
                     {
                         byte biffX = (byte)(p.getX() - blocker.getX());
@@ -355,18 +367,19 @@ public class Player extends AppCompatActivity {
 
         }
 
-        int toBeRemoved = -1;
+        Piece toBeRemoved = nuller;
         Piece a;
         boolean attacking = false;
-        for (int i = 0; i < pieces.size(); i++)
+        Iterator<Piece> iterator = pieces.iterator();
+        while (iterator.hasNext())
         {
-            a = pieces.get(i);
+            a = iterator.next();
             if (a.getX() == x && a.getY() == y) {
                 attacking = true;
                 if (a.isColour() == p.isColour() || !p.isAttackAllowed(x,y))
                     return false;
                 else {
-                    toBeRemoved = i;
+                    toBeRemoved = a;
                     a.setX((byte)-1);
                     a.setY((byte)-1);
                     break;
@@ -375,9 +388,9 @@ public class Player extends AppCompatActivity {
         }
 
         if (!attacking && !p.isMoveAllowed(x,y)) {
-            if (toBeRemoved != -1) {
-                pieces.get(toBeRemoved).setY(y);
-                pieces.get(toBeRemoved).setX(x);
+            if (toBeRemoved != nuller) {
+                toBeRemoved.setY(y);
+                toBeRemoved.setX(x);
             }
             return false;
         }
@@ -389,25 +402,25 @@ public class Player extends AppCompatActivity {
         {
             p.setX(originalX);
             p.setY(originalY);
-            if (toBeRemoved != -1) {
-                pieces.get(toBeRemoved).setY(y);
-                pieces.get(toBeRemoved).setX(x);
+            if (toBeRemoved != nuller) {
+                toBeRemoved.setY(y);
+                toBeRemoved.setX(x);
             }
             return false;
         }
         else {
             p.setX(originalX);
             p.setY(originalY);
-            if (toBeRemoved != -1) {
-                pieces.get(toBeRemoved).setY(y);
-                pieces.get(toBeRemoved).setX(x);
+            if (toBeRemoved != nuller) {
+                toBeRemoved.setY(y);
+                toBeRemoved.setX(x);
             }
             return true;
         }
     }
 
-    private void makeMove(ArrayList<Piece> pieces, byte tempX, byte tempY)
-    { // TODO promotion (somewhere xD)
+    private boolean makeMove(ArrayList<Piece> pieces, Piece selected, byte tempX, byte tempY)
+    {
         boolean resetEnPassant = true;
 
         byte x = tempX;
@@ -493,6 +506,8 @@ public class Player extends AppCompatActivity {
         selected.setX(tempX);
         selected.setY(tempY);
 
+        boolean wasRemoved = false;
+
         Iterator<Piece> iterator = pieces.iterator();
         Piece p;
         while (iterator.hasNext())
@@ -502,6 +517,8 @@ public class Player extends AppCompatActivity {
             {
                 p.setX((byte) -1);
                 p.setY((byte) -1);
+                taken.add(p);
+                wasRemoved = true;
                 break;
             }
         }
@@ -509,12 +526,13 @@ public class Player extends AppCompatActivity {
         if (resetEnPassant)
             enPassantPosition = nuller;
 
+        return wasRemoved;
     }
-
 
     private boolean hasMoves(boolean player, ArrayList<Piece> pieces)
     {
         Piece p;
+        pieces = copyList(pieces);
         Iterator<Piece> iterator = pieces.iterator();
         while (iterator.hasNext())
         {
@@ -530,10 +548,213 @@ public class Player extends AppCompatActivity {
         return false;
     }
 
+    private int staticEvaluation(ArrayList<Piece> pieces)
+    {
+        int score = 0;
+        Iterator<Piece> iterator = pieces.iterator();
+        Piece p;
+        while (iterator.hasNext())
+        {
+            p = iterator.next();
+            if (p.isColour())
+                score += p.getValue();
+            else
+                score -= p.getValue();
+        }
+        return score;
+    }
+
+    private ArrayList<Piece> copyList(ArrayList<Piece> list)
+    {
+        Iterator<Piece> it = list.iterator();
+        ArrayList<Piece> newList = new ArrayList<>();
+        Piece p, adder;
+        while (it.hasNext())
+        {   // TODO deep copy?
+            p = it.next();
+            if (p instanceof Pawn)
+            {
+                adder = new Pawn(p.getX(), p.getY(), p.isColour());
+            }
+            else if (p instanceof Bishop)
+            {
+                adder = new Bishop(p.getX(), p.getY(), p.isColour());
+            }
+            else if (p instanceof Knight)
+            {
+                adder = new Knight(p.getX(), p.getY(), p.isColour());
+            }
+            else if (p instanceof Rook)
+            {
+                adder = new Rook(p.getX(), p.getY(), p.isColour());
+            }
+            else if (p instanceof Queen)
+            {
+                adder = new Queen(p.getX(), p.getY(), p.isColour());
+            }
+            else
+            {
+                adder = new King(p.getX(), p.getY(), p.isColour());
+            }
+            newList.add(adder);
+        }
+        return newList;
+    }
+
+    private int alfaBeta(boolean player, int maxDepth, ArrayList<Piece> pieces, int alfa, int beta)
+    {
+
+        pieces = copyList(pieces);
+        if (!hasMoves(player, pieces) || maxDepth == 0)
+            return staticEvaluation(pieces);
+        else if (player)
+        {
+            int score = Integer.MIN_VALUE;
+            byte originalX = -1;
+            byte originalY = -1;
+            int returned;
+
+            // TODO list possible moves method here:
+            ArrayList<Piece> newList = copyList(pieces); // new ArrayList<>(pieces);
+            Iterator<Piece> piecesIterator = newList.iterator();
+            boolean removed = false;
+            Piece p;
+            boolean exit;
+            while (piecesIterator.hasNext())
+            {
+                p = piecesIterator.next();
+                exit = false;
+                originalX = p.getX();
+                originalY = p.getY();
+                for (byte i = 0; i < 8 && !exit; i++)
+                {
+                    for (byte j = 0; j < 8 && !exit; j++)
+                    {
+                        if (isMoveLegal(player, p, pieces, i, j))
+                        {
+                            if (makeMove(pieces, p, i, j))
+                                removed = true;
+
+                            returned = alfaBeta(!player, maxDepth-1, newList, alfa, beta);
+
+                            if (returned > score)
+                            {
+                                bestPiece = p;
+                                score = returned;
+                                bestX = i;
+                                bestY = j;
+                            }
+
+                            p.setX(originalX);
+                            p.setY(originalY);
+
+                            if (removed)
+                            {
+                                Piece toAdd = new Piece();
+                                Iterator<Piece> takenIterator = taken.iterator();
+                                while (takenIterator.hasNext())
+                                    toAdd = takenIterator.next();
+                                takenIterator.remove();
+                                toAdd.setX(i);
+                                toAdd.setY(j);
+                                pieces.add(toAdd);
+
+//                                pieces.trimToSize();
+//                                taken.trimToSize();
+
+                                removed = false;
+                            }
+
+                            if (alfa < returned)
+                                alfa = returned;
+
+                            if (alfa >= beta)
+                                exit = true;
+                        }
+                    }
+                }
+            }
+
+        }
+        else
+        {
+
+            int score = Integer.MAX_VALUE;
+            byte originalX = -1;
+            byte originalY = -1;
+            int returned;
+
+            // TODO list possible moves method here:
+            ArrayList<Piece> newList = copyList(pieces);
+            Iterator<Piece> piecesIterator = newList.iterator();
+            boolean removed = false;
+            Piece p;
+            boolean exit;
+            while (piecesIterator.hasNext())
+            {
+                p = piecesIterator.next();
+                exit = false;
+                originalX = p.getX();
+                originalY = p.getY();
+                for (byte i = 0; i < 8 && !exit; i++)
+                {
+                    for (byte j = 0; j < 8 && !exit; j++)
+                    {
+                        if (isMoveLegal(player, p, pieces, i, j))
+                        {
+                            if (makeMove(pieces, p, i, j))
+                                removed = true;
+
+                            returned = alfaBeta(!player,maxDepth-1, newList, alfa, beta);
+
+                            if (returned < score)
+                            {
+                                bestPiece = p;
+                                score = returned;
+                                bestX = i;
+                                bestY = j;
+                            }
+
+                            p.setX(originalX);
+                            p.setY(originalY);
+
+                            if (removed)
+                            {
+                                Piece toAdd = new Piece();
+                                Iterator<Piece> takenIterator = taken.iterator();
+                                while (takenIterator.hasNext())
+                                    toAdd = takenIterator.next();
+                                takenIterator.remove();
+                                toAdd.setX(i);
+                                toAdd.setY(j);
+                                pieces.add(toAdd);
+
+//                                pieces.trimToSize();
+//                                taken.trimToSize();
+
+                                removed = false;
+                            }
+
+                            if (beta > returned)
+                                beta = returned;
+
+                            if (alfa >= beta)
+                                exit = true;
+                        }
+                    }
+                }
+            }
+
+        }
+
+        return -1;
+    }
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_player);
+        setContentView(R.layout.activity_minimax);
 
         // adding Kings to the board
         String tempPos = "e8";
@@ -630,65 +851,8 @@ public class Player extends AppCompatActivity {
                         {
                             if(isMoveLegal(player, selected, pieces, tempX, tempY))
                             {
+                                makeMove(pieces, selected, tempX, tempY);
 
-                                /*
-                                boolean resetEnPassant = true;
-
-                                byte x = tempX;
-                                byte y = tempY;
-
-                                if (selected instanceof Pawn)
-                                {
-                                    if (selected.isColour() && selected.getX() == 6 && tempX == 4)
-                                    {
-                                        enPassantPosition = new Piece();
-                                        enPassantPosition.setX((byte)5);
-                                        enPassantPosition.setY(selected.getY());
-                                        resetEnPassant = false;
-//                                        enPassantPosition.setColour(true);
-                                    }
-                                    else if (!selected.isColour() && selected.getX() == 1 && tempX == 3)
-                                    {
-                                        enPassantPosition = new Piece();
-                                        enPassantPosition.setX((byte)2);
-                                        enPassantPosition.setY(selected.getY());
-                                        resetEnPassant = false;
-//                                        enPassantPosition.setColour(false);
-                                    }
-                                    else if (enPassantPosition != nuller && enPassantPosition.getX() == tempX && enPassantPosition.getY() == tempY)
-                                    {
-                                        if (player)
-                                            x = (byte)3;
-                                        else
-                                            x = (byte)4;
-
-                                    }
-                                }
-
-                                selected.setX(tempX);
-                                selected.setY(tempY);
-
-                                boolean moves = false;
-                                Iterator<Piece> iterator = pieces.iterator();
-                                Piece p;
-                                while (iterator.hasNext())
-                                {
-                                    p = iterator.next();
-                                    if (p != selected && p.getX() == x && p.getY() == y)
-                                    {
-                                        p.setX((byte) -1);
-                                        p.setY((byte) -1);
-                                        break;
-                                    }
-                                }
-                                iterator = pieces.iterator();
-                                */
-
-
-                                makeMove(pieces, tempX, tempY);
-
-
-                                Iterator<Piece> iterator = pieces.iterator();
 
                                 if (isInCheck(!player))
                                 {
@@ -700,7 +864,7 @@ public class Player extends AppCompatActivity {
                                             message = "Check mate! White has won!";
                                         else
                                             message = "Check mate! Black has won!";
-                                        new AlertDialog.Builder(Player.this)
+                                        new AlertDialog.Builder(Minimax.this)
                                                 .setTitle("Game over")
                                                 .setMessage(message)
                                                 .setNeutralButton("Show the board", new DialogInterface.OnClickListener() {
@@ -710,14 +874,14 @@ public class Player extends AppCompatActivity {
                                                 })
                                                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                                                     public void onClick(DialogInterface dialog, int which) {
-                                                        startActivity(new Intent(Player.this, MainActivity.class));
+                                                        startActivity(new Intent(Minimax.this, MainActivity.class));
                                                     }
                                                 })
                                                 .show();
                                     }
                                 }
                                 else if (!hasMoves(!player, pieces))
-                                    new AlertDialog.Builder(Player.this)
+                                    new AlertDialog.Builder(Minimax.this)
                                             .setTitle("Game over")
                                             .setMessage("Stalemate!")
                                             .setNeutralButton("Show the board", new DialogInterface.OnClickListener() {
@@ -727,7 +891,7 @@ public class Player extends AppCompatActivity {
                                             })
                                             .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                                                 public void onClick(DialogInterface dialog, int which) {
-                                                    startActivity(new Intent(Player.this, MainActivity.class));
+                                                    startActivity(new Intent(Minimax.this, MainActivity.class));
                                                 }
                                             })
                                             .show();
@@ -755,7 +919,91 @@ public class Player extends AppCompatActivity {
             }
         }
 
+        Button moveBtn = findViewById(R.id.moveBtn);
 
+        moveBtn.setOnClickListener(new View.OnClickListener()
+                           {
+            @Override
+            public void onClick(View v)
+            {
+
+                alfaBeta(!player,2, pieces, Integer.MIN_VALUE, Integer.MAX_VALUE);
+
+                if (bestPiece == nuller)
+                {
+                    Toast popup = Toast.makeText(getApplicationContext(), "No moves can be made!", Toast.LENGTH_SHORT );
+                    popup.show();
+                }
+                else
+                {
+                    for (Piece searched : pieces)
+                        if (searched.getX() == bestPiece.getX() && searched.getY() == bestPiece.getY())
+                        {
+                            bestPiece = searched;
+                            break;
+                        }
+
+                    makeMove(pieces, bestPiece, bestX, bestY);
+                    bestPiece = nuller;
+                    bestX = -1;
+                    bestY = -1;
+
+                    if (isInCheck(!player))
+                    {
+
+                        if (!hasMoves(!player, pieces))
+                        {
+                            CharSequence message;
+                            if (player)
+                                message = "Check mate! White has won!";
+                            else
+                                message = "Check mate! Black has won!";
+                            new AlertDialog.Builder(Minimax.this)
+                                    .setTitle("Game over")
+                                    .setMessage(message)
+                                    .setNeutralButton("Show the board", new DialogInterface.OnClickListener()
+                                    {
+                                        public void onClick(DialogInterface dialog, int which)
+                                        {
+                                            dialog.dismiss();
+                                        }
+                                    })
+                                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
+                                    {
+                                        public void onClick(DialogInterface dialog, int which)
+                                        {
+                                            startActivity(new Intent(Minimax.this, MainActivity.class));
+                                        }
+                                    })
+                                    .show();
+                        }
+                    }
+                    else if (!hasMoves(!player, pieces))
+                        new AlertDialog.Builder(Minimax.this)
+                                .setTitle("Game over")
+                                .setMessage("Stalemate!")
+                                .setNeutralButton("Show the board", new DialogInterface.OnClickListener()
+                                {
+                                    public void onClick(DialogInterface dialog, int which)
+                                    {
+                                        dialog.dismiss();
+                                    }
+                                })
+                                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
+                                {
+                                    public void onClick(DialogInterface dialog, int which)
+                                    {
+                                        startActivity(new Intent(Minimax.this, MainActivity.class));
+                                    }
+                                })
+                                .show();
+
+                    updateTheBoard();
+                    player = !player;
+                }
+            }
+        }
+    );
 
     }
 }

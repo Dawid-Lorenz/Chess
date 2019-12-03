@@ -1,7 +1,7 @@
 package com.example.chess;
 
 public class Pawn extends Piece {
-    private short value = 8;
+    private short value = 1;
 
     public Pawn(boolean colour) {
         super(colour);
