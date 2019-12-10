@@ -4,7 +4,7 @@ public class Piece {
 
     private byte x, y;
     private boolean colour, selected;
-    private short value;
+    private int value;
 
     public Piece(){}
 
@@ -18,7 +18,7 @@ public class Piece {
         this.y = y;
     }
 
-    public short getValue() {
+    public int getValue() {
         return value;
     }
 

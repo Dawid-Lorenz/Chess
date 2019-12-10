@@ -1,7 +1,7 @@
 package com.example.chess;
 
 public class Bishop extends Piece {
-    private short value = 3;
+    private int value = 30;
 
     public Bishop(boolean colour) {
         super(colour);
@@ -9,6 +9,12 @@ public class Bishop extends Piece {
 
     public Bishop(byte x, byte y, boolean colour){
         super(x, y, colour);
+    }
+
+    @Override
+    public int getValue()
+    {
+        return value;
     }
 
     @Override

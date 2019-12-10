@@ -1,7 +1,7 @@
 package com.example.chess;
 
 public class Knight extends Piece {
-    private short value = 3;
+    private int value = 30;
 
     public Knight(boolean colour) {
         super(colour);
@@ -11,6 +11,11 @@ public class Knight extends Piece {
         super(x, y, colour);
     }
 
+    @Override
+    public int getValue()
+    {
+        return value;
+    }
     @Override
     public boolean isMoveAllowed(byte x, byte y) {
         return ((getX() - x == 1 || x - getX() == 1) && (getY() - y == 2 || y - getY() == 2))

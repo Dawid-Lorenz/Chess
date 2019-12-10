@@ -1,7 +1,7 @@
 package com.example.chess;
 
 public class Pawn extends Piece {
-    private short value = 1;
+    private int value = 10;
 
     public Pawn(boolean colour) {
         super(colour);
@@ -11,6 +11,11 @@ public class Pawn extends Piece {
         super(x, y, colour);
     }
 
+    @Override
+    public int getValue()
+    {
+        return value;
+    }
     @Override
     public boolean isMoveAllowed(byte x, byte y)
     {
