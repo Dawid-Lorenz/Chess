@@ -659,6 +659,7 @@ public class Minimax extends AppCompatActivity
 
         Piece p;
         Coord source, target;
+        Move adder;
         pieces = copyList(pieces);
         Iterator<Piece> iterator = pieces.iterator();
         while (iterator.hasNext())
@@ -766,6 +767,18 @@ public class Minimax extends AppCompatActivity
         int white, black;
         Iterator<Piece> iterator = pieces.iterator();
         Piece p;
+        ArrayList<Move> moves = listPossibleMoves(player, pieces);
+        if (isInCheck(player, pieces) && moves.isEmpty())
+        {
+            if (player)
+                return -1000.0;
+            else
+                return 1000.0;
+        }
+
+        if (moves.isEmpty() && !isInCheck(player, pieces))
+            return 0.0;
+
         while (iterator.hasNext())
         {
             p = iterator.next();
@@ -776,13 +789,11 @@ public class Minimax extends AppCompatActivity
                 else
                     score -= (double)p.getValue();
 
-                System.err.println((double)p.getValue());
-
             }
         }
 
         iterator = pieces.iterator();
-        /*
+
         for (byte i = 0; i < 8; i++)
         {
             for (byte j = 0; j < 8; j++)
@@ -801,9 +812,9 @@ public class Minimax extends AppCompatActivity
                     }
                 }
 
-                score += (white - black) * boardValues[i][j];
+                score += (white - black) * boardValues[i][j] * 10.0;
             }
-        } */
+        }
 
 //        if (score != 0.0)
 //            System.err.println(score);
@@ -850,23 +861,35 @@ public class Minimax extends AppCompatActivity
         return newList;
     }
 
-    private double alfaBeta(boolean player, int maxDepth, ArrayList<Piece> pieces, double alfa, double beta)
+    private Move alfaBeta(boolean player, int maxDepth, ArrayList<Piece> pieces, double alfa, double beta)
     { // TODO change so that this method returns value and move
-        Piece bestPiece = new Piece();
-        byte bestX = -1, bestY = -1;
-        double score;
+
+//        Piece bestPiece = new Piece();
+//        byte bestX = -1, bestY = -1;
+        Move returnValue = new Move();
+        returnValue.source = new Coord(-1,-1);
+//        double score;
 //        pieces = copyList(pieces);
         ArrayList<Move> possibleMoves = listPossibleMoves(player, pieces);
         if (isInCheck(player, pieces) && possibleMoves.isEmpty())
-            return -1000;
+        {
+            if (player)
+                returnValue.score = -1000;
+            else
+                returnValue.score = 1000;
+            return returnValue;
+        }
         else if (possibleMoves.isEmpty() || maxDepth == 0)
-            return staticEvaluation(player, pieces);
+        {
+            returnValue.score = staticEvaluation(player, pieces);
+            return returnValue;
+        }
         else if (player)
         {
-            score = Double.NEGATIVE_INFINITY;
+            returnValue.score = Double.NEGATIVE_INFINITY;
             byte originalX = -1;
             byte originalY = -1;
-            double returned;
+            Move returned;
 
             ArrayList<Piece> newList; // new ArrayList<>(pieces);
             ArrayList<Piece> iterationList = copyList(pieces);
@@ -892,12 +915,11 @@ public class Minimax extends AppCompatActivity
 
                 returned = alfaBeta(!player, maxDepth - 1, newList, alfa, beta);
 
-                if (returned > score)
+                if (returned.score > returnValue.score || (returned.score == returnValue.score && Math.random() > 0.5))
                 {
-                    bestPiece = p;
-                    score = returned;
-                    bestX = move.target.x;
-                    bestY = move.target.y;
+                    returnValue.score = returned.score;
+                    returnValue.target = move.target;
+                    returnValue.source = move.source;
                 }
 
                 p.setX(originalX);
@@ -917,8 +939,8 @@ public class Minimax extends AppCompatActivity
                     removed = false;
                 }
 
-                if (alfa < returned)
-                    alfa = returned;
+                if (alfa < returned.score)
+                    alfa = returned.score;
 
                 if (alfa >= beta)
                     break;
@@ -994,10 +1016,10 @@ public class Minimax extends AppCompatActivity
         else
         {
 
-            score = Double.POSITIVE_INFINITY;
+            returnValue.score = Double.POSITIVE_INFINITY;
             byte originalX = -1;
             byte originalY = -1;
-            double returned;
+            Move returned;
 
             ArrayList<Piece> newList; // = copyList(pieces);
             ArrayList<Piece> iterationList = copyList(pieces);
@@ -1023,12 +1045,11 @@ public class Minimax extends AppCompatActivity
 
                 returned = alfaBeta(!player, maxDepth - 1, newList, alfa, beta);
 
-                if (returned < score)
+                if (returned.score < returnValue.score || (returned.score == returnValue.score && Math.random() > 0.5))
                 {
-                    bestPiece = p;
-                    score = returned;
-                    bestX = move.target.x;
-                    bestY = move.target.y;
+                    returnValue.score = returned.score;
+                    returnValue.target = move.target;
+                    returnValue.source = move.source;
                 }
 
                 p.setX(originalX);
@@ -1048,8 +1069,8 @@ public class Minimax extends AppCompatActivity
                     removed = false;
                 }
 
-                if (beta > returned)
-                    beta = returned;
+                if (beta > returned.score)
+                    beta = returned.score;
 
                 if (alfa >= beta)
                     break;
@@ -1124,11 +1145,9 @@ public class Minimax extends AppCompatActivity
             */
         }
 
-        this.bestPiece = bestPiece;
-        this.bestX = bestX;
-        this.bestY = bestY;
 
-        return score;
+
+        return returnValue;
     }
 
     @Override
@@ -1184,7 +1203,7 @@ public class Minimax extends AppCompatActivity
         pieces.add(new Bishop(coords[0], coords[1], true));
         tempPos = "d1";
         coords = toCoord(tempPos);
-//        pieces.add(new Queen(coords[0], coords[1], true));
+        pieces.add(new Queen(coords[0], coords[1], true));
         tempPos = "f1";
         coords = toCoord(tempPos);
         pieces.add(new Bishop(coords[0], coords[1], true));
@@ -1315,26 +1334,29 @@ public class Minimax extends AppCompatActivity
                                        public void onClick(View v)
                                        {
 
-                                           alfaBeta(player, 1, pieces, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                           Move answer = alfaBeta(player, 1, pieces, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 
-                                           if (bestPiece == nuller)
+                                           ArrayList<Move> moves = listPossibleMoves(player, pieces);
+
+                                           if (answer.source.x == -1)
                                            {
                                                Toast popup = Toast.makeText(getApplicationContext(), "No moves can be made!", Toast.LENGTH_SHORT);
                                                popup.show();
                                            }
                                            else
                                            {
+                                               Piece movedPiece = nuller;
                                                for (Piece searched : pieces)
-                                                   if (searched.getX() == bestPiece.getX() && searched.getY() == bestPiece.getY())
+                                                   if (searched.getX() == answer.source.x && searched.getY() == answer.source.y)
                                                    {
-                                                       bestPiece = searched;
+                                                       movedPiece = searched;
                                                        break;
                                                    }
 
-                                               makeMove(pieces, bestPiece, bestX, bestY);
-                                               bestPiece = nuller;
-                                               bestX = -1;
-                                               bestY = -1;
+                                               makeMove(pieces, movedPiece, answer.target.x, answer.target.y);
+//                                               bestPiece = nuller;
+//                                               bestX = -1;
+//                                               bestY = -1;
 
                                                if (isInCheck(!player, pieces))
                                                {
@@ -1386,6 +1408,7 @@ public class Minimax extends AppCompatActivity
                                                            })
                                                            .show();
 
+                                               removeTaken();
                                                updateTheBoard();
                                                player = !player;
                                            }
@@ -1400,11 +1423,24 @@ public class Minimax extends AppCompatActivity
     {
         public Coord source;
         public Coord target;
+        public double score;
+
+        public Move()
+        {
+
+        }
 
         public Move(Coord source, Coord target)
         {
             this.source = source;
             this.target = target;
+        }
+
+        public Move(Coord source, Coord target, double score)
+        {
+            this.source = source;
+            this.target = target;
+            this.score = score;
         }
     }
 
