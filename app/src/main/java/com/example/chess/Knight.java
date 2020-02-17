@@ -1,7 +1,7 @@
 package com.example.chess;
 
 public class Knight extends Piece {
-    private int value = 30;
+    private int value = 330;
 
     public Knight(boolean colour) {
         super(colour);

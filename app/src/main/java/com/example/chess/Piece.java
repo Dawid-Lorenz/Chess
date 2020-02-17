@@ -5,6 +5,7 @@ public class Piece {
     private byte x, y;
     private boolean colour, selected;
     private int value;
+    private int defense;
 
     public Piece(){}
 
@@ -61,5 +62,13 @@ public class Piece {
     }
 
     public boolean isAttackAllowed(byte x, byte y) {return isMoveAllowed(x,y);}
+
+    public void addDefender() {defense++;}
+
+    public void addAttacker() {defense--;}
+
+    public int getDefense() {return defense;}
+
+    public void setDefense(int defense) {this.defense = defense;}
 }
 

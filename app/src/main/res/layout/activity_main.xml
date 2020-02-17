@@ -39,4 +39,15 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/player_btn" />
 
+    <Button
+        android:id="@+id/editorBtn"
+        android:layout_width="155dp"
+        android:layout_height="53dp"
+        android:layout_marginStart="161dp"
+        android:layout_marginLeft="161dp"
+        android:layout_marginTop="53dp"
+        android:text="Editor"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/minimaxBtn" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

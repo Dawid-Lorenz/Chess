@@ -1,7 +1,8 @@
 package com.example.chess;
 
 public class Pawn extends Piece {
-    private int value = 10;
+    private int value = 100;
+    private boolean isPawnProtected = false;
 
     public Pawn(boolean colour) {
         super(colour);
@@ -33,4 +34,8 @@ public class Pawn extends Piece {
         else
             return getX() - x == -1 && (getY() - y == 1 || getY() - y == -1);
     }
+
+    public void setPawnProtected(boolean isPawnProtected) {this.isPawnProtected = isPawnProtected;}
+
+    public boolean isPawnProtected() { return isPawnProtected;}
 }

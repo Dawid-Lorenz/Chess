@@ -535,7 +535,7 @@ public class Player extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
 
-        // adding Kings to the board
+        // adding Kings to the boardButtons
         String tempPos = "e8";
         byte[] coords = toCoord(tempPos);
         kingB = new King(coords[0], coords[1], false);
@@ -703,7 +703,7 @@ public class Player extends AppCompatActivity {
                                         new AlertDialog.Builder(Player.this)
                                                 .setTitle("Game over")
                                                 .setMessage(message)
-                                                .setNeutralButton("Show the board", new DialogInterface.OnClickListener() {
+                                                .setNeutralButton("Show the boardButtons", new DialogInterface.OnClickListener() {
                                                     public void onClick(DialogInterface dialog, int which) {
                                                         dialog.dismiss();
                                                     }
@@ -720,7 +720,7 @@ public class Player extends AppCompatActivity {
                                     new AlertDialog.Builder(Player.this)
                                             .setTitle("Game over")
                                             .setMessage("Stalemate!")
-                                            .setNeutralButton("Show the board", new DialogInterface.OnClickListener() {
+                                            .setNeutralButton("Show the boardButtons", new DialogInterface.OnClickListener() {
                                                 public void onClick(DialogInterface dialog, int which) {
                                                     dialog.dismiss();
                                                 }

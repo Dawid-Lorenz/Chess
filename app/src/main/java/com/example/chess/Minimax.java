@@ -18,10 +18,10 @@ import java.util.Iterator;
 
 public class Minimax extends AppCompatActivity
 {
-    ArrayList<Piece> pieces = new ArrayList<>();
-    ArrayList<Piece> taken = new ArrayList<>();
+//    ArrayList<Piece> pieces = new ArrayList<>();
+//    ArrayList<Piece> taken = new ArrayList<>();
 
-    double[][] boardValues = {
+    static double [][] boardValues = {
             {0.5, 1, 1, 1, 1, 1, 1, 0.5},
             {1, 1, 1, 1, 1, 1, 1, 1},
             {1, 1, 3, 3, 3, 3, 1, 1},
@@ -32,24 +32,85 @@ public class Minimax extends AppCompatActivity
             {0.5, 1, 1, 1, 1, 1, 1, 0.5}
     };
 
-    ImageButton[][] board = new ImageButton[8][8];
+    static int [][] pieceSquarTable =
+            {
+                    { // pawn
+                            0,  0,  0,  0,  0,  0,  0,  0,
+                            50, 50, 50, 50, 50, 50, 50, 50,
+                            10, 10, 20, 30, 30, 20, 10, 10,
+                            5,  5, 10, 25, 25, 10,  5,  5,
+                            0,  0,  0, 20, 20,  0,  0,  0,
+                            5, -5,-10,  0,  0,-10, -5,  5,
+                            5, 10, 10,-20,-20, 10, 10,  5,
+                            0,  0,  0,  0,  0,  0,  0,  0
+                    },
+                    { // knight
+                            -50,-40,-30,-30,-30,-30,-40,-50,
+                            -40,-20,  0,  0,  0,  0,-20,-40,
+                            -30,  0, 10, 15, 15, 10,  0,-30,
+                            -30,  5, 15, 20, 20, 15,  5,-30,
+                            -30,  0, 15, 20, 20, 15,  0,-30,
+                            -30,  5, 10, 15, 15, 10,  5,-30,
+                            -40,-20,  0,  5,  5,  0,-20,-40,
+                            -50,-40,-30,-30,-30,-30,-40,-50,
+                    },
+                    { // bishop
+                            -20,-10,-10,-10,-10,-10,-10,-20,
+                            -10,  0,  0,  0,  0,  0,  0,-10,
+                            -10,  0,  5, 10, 10,  5,  0,-10,
+                            -10,  5,  5, 10, 10,  5,  5,-10,
+                            -10,  0, 10, 10, 10, 10,  0,-10,
+                            -10, 10, 10, 10, 10, 10, 10,-10,
+                            -10,  5,  0,  0,  0,  0,  5,-10,
+                            -20,-10,-10,-10,-10,-10,-10,-20,
+                    },
+                    { // Rook
+                            0,  0,  0,  0,  0,  0,  0,  0,
+                            5, 10, 10, 10, 10, 10, 10,  5,
+                            -5,  0,  0,  0,  0,  0,  0, -5,
+                            -5,  0,  0,  0,  0,  0,  0, -5,
+                            -5,  0,  0,  0,  0,  0,  0, -5,
+                            -5,  0,  0,  0,  0,  0,  0, -5,
+                            -5,  0,  0,  0,  0,  0,  0, -5,
+                            0,  0,  0,  5,  5,  0,  0,  0
+                    },
+                    { // Queen
+                            -20,-10,-10, -5, -5,-10,-10,-20,
+                            -10,  0,  0,  0,  0,  0,  0,-10,
+                            -10,  0,  5,  5,  5,  5,  0,-10,
+                            -5,  0,  5,  5,  5,  5,  0, -5,
+                            0,  0,  5,  5,  5,  5,  0, -5,
+                            -10,  5,  5,  5,  5,  5,  0,-10,
+                            -10,  0,  5,  0,  0,  0,  0,-10,
+                            -20,-10,-10, -5, -5,-10,-10,-20
+                    },
+                    { // King (middle game)
+                            -30,-40,-40,-50,-50,-40,-40,-30,
+                            -30,-40,-40,-50,-50,-40,-40,-30,
+                            -30,-40,-40,-50,-50,-40,-40,-30,
+                            -30,-40,-40,-50,-50,-40,-40,-30,
+                            -20,-30,-30,-40,-40,-30,-30,-20,
+                            -10,-20,-20,-20,-20,-20,-20,-10,
+                            20, 20,  0,  0,  0,  0, 20, 20,
+                            20, 30, 10,  0,  0, 10, 30, 20
+                    }
+            };
 
-    Piece nuller = new Piece();
-    Piece enPassantPosition = nuller;
-    //    Piece enPassant = new Piece();
-    Piece selected = nuller;
-    Piece bestPiece = nuller;
-    byte bestX = -1, bestY = -1;
+    ImageButton[][] boardButtons = new ImageButton[8][8];
 
-    boolean player = true;
+//    Piece nuller = new Piece();
+//    Piece enPassantPosition = nuller;
+//    Piece selected = nuller;
 
-//    King kingW, kingB;
+//    boolean player = true;
 
-    int counter = 0;
+    Board board;
 
-    private void updateTheBoard()
+
+    protected static void updateTheBoard(Board board, ImageButton[][] boardButtons)
     {
-        for (ImageButton[] i : board)
+        int counter = 0;
+        for (ImageButton[] i : boardButtons)
         {
             for (ImageButton j : i)
             {
@@ -63,7 +124,7 @@ public class Minimax extends AppCompatActivity
             counter++;
 
         }
-        for (Piece p : pieces)
+        for (Piece p : board.pieces)
         {
             if (p == null)
             {
@@ -75,39 +136,39 @@ public class Minimax extends AppCompatActivity
             {
                 if (p instanceof King)
                     if (p.isColour())
-                        board[x][y].setImageResource(R.drawable.king_white);
+                        boardButtons[x][y].setImageResource(R.drawable.king_white);
                     else
-                        board[x][y].setImageResource(R.drawable.king_black);
+                        boardButtons[x][y].setImageResource(R.drawable.king_black);
                 else if (p instanceof Rook)
                     if (p.isColour())
-                        board[x][y].setImageResource(R.drawable.rook_white);
+                        boardButtons[x][y].setImageResource(R.drawable.rook_white);
                     else
-                        board[x][y].setImageResource(R.drawable.rook_black);
+                        boardButtons[x][y].setImageResource(R.drawable.rook_black);
                 else if (p instanceof Bishop)
                     if (p.isColour())
-                        board[x][y].setImageResource(R.drawable.bishop_white);
+                        boardButtons[x][y].setImageResource(R.drawable.bishop_white);
                     else
-                        board[x][y].setImageResource(R.drawable.bishop_black);
+                        boardButtons[x][y].setImageResource(R.drawable.bishop_black);
                 else if (p instanceof Knight)
                     if (p.isColour())
-                        board[x][y].setImageResource(R.drawable.knight_white);
+                        boardButtons[x][y].setImageResource(R.drawable.knight_white);
                     else
-                        board[x][y].setImageResource(R.drawable.knight_black);
+                        boardButtons[x][y].setImageResource(R.drawable.knight_black);
                 else if (p instanceof Queen)
                     if (p.isColour())
-                        board[x][y].setImageResource(R.drawable.queen_white);
+                        boardButtons[x][y].setImageResource(R.drawable.queen_white);
                     else
-                        board[x][y].setImageResource(R.drawable.queen_black);
+                        boardButtons[x][y].setImageResource(R.drawable.queen_black);
                 else if (p instanceof Pawn)
                     if (p.isColour())
-                        board[x][y].setImageResource(R.drawable.pawn_white);
+                        boardButtons[x][y].setImageResource(R.drawable.pawn_white);
                     else
-                        board[x][y].setImageResource(R.drawable.pawn_black);
+                        boardButtons[x][y].setImageResource(R.drawable.pawn_black);
             }
         }
 
-        if (selected != nuller)
-            board[selected.getX()][selected.getY()].setBackgroundResource(R.drawable.selected);
+        if (board.selected != board.nuller)
+            boardButtons[board.selected.getX()][board.selected.getY()].setBackgroundResource(R.drawable.selected);
 
     }
 
@@ -122,7 +183,7 @@ public class Minimax extends AppCompatActivity
         return out;
     }
 
-    private byte[] toCoord(String pos)
+    protected static byte[] toCoord(String pos)
     {
         char c = pos.charAt(0);
         byte y = (byte) (c - 'a');
@@ -133,23 +194,23 @@ public class Minimax extends AppCompatActivity
         return ans;
     }
 
-    private void removeTaken()
+    protected static void removeTaken(Board board)
     {
-        Iterator<Piece> iter = pieces.iterator();
+        Iterator<Piece> iter = board.pieces.iterator();
         Piece p;
         while (iter.hasNext())
         {
             p = iter.next();
             if (p.getX() == -1 || p.getY() == -1)
             {
-                taken.add(p);
+                board.taken.add(p);
             }
         }
-        pieces.removeAll(taken);
-        pieces.trimToSize();
+        board.pieces.removeAll(board.taken);
+        board.pieces.trimToSize();
     }
 
-    private boolean isInCheck(boolean player, ArrayList<Piece> pieces)
+    protected static boolean isInCheck(boolean player, ArrayList<Piece> pieces)
     {
         King checked = new King((byte)-1,(byte)-1, player);
         for (Piece p : pieces)
@@ -159,7 +220,7 @@ public class Minimax extends AppCompatActivity
         }
         for (Piece p : pieces)
         {
-            if (player != p.isColour())
+            if (player != p.isColour() && p.getX() != -1 && p.getY() != -1)
                 if ((p instanceof Pawn || p instanceof Knight || p instanceof King) &&
                         p.isAttackAllowed(checked.getX(), checked.getY()))
                     return true;
@@ -226,9 +287,9 @@ public class Minimax extends AppCompatActivity
         return false;
     }
 
-    private boolean isMoveLegal(boolean player, @org.jetbrains.annotations.NotNull Piece p, ArrayList<Piece> pieces, byte x, byte y)
+    protected static boolean isMoveLegal(Board board, Piece p, byte x, byte y)
     {
-        for (Piece next : pieces)
+        for (Piece next : board.pieces)
             if (next.getX() == p.getX() && next.getY() == p.getY())
             {
                 p = next;
@@ -239,15 +300,15 @@ public class Minimax extends AppCompatActivity
 //        pieces = copyList(pieces);
         if (p instanceof King)
         {
-            if (player != p.isColour())
+            if (board.player != p.isColour())
                 return false;
 
-            if ((player && x == 7 || !player && x == 0) && (y == 2 || y == 6) && !((King) p).moved && !isInCheck(player, pieces))
+            if ((board.player && x == 7 || !board.player && x == 0) && (y == 2 || y == 6) && !((King) p).moved && !isInCheck(board.player, board.pieces))
             {
-                byte firstRank = player ? (byte) 7 : 0;
+                byte firstRank = board.player ? (byte) 7 : 0;
                 boolean canCastle = true;
-                Rook rook = new Rook(player);
-                Iterator<Piece> iterator = pieces.iterator();
+                Rook rook = new Rook(board.player);
+                Iterator<Piece> iterator = board.pieces.iterator();
                 Piece blocker;
                 while (iterator.hasNext())
                 {
@@ -277,45 +338,45 @@ public class Minimax extends AppCompatActivity
 
                 if (y == 2)
                 {
-                    selected.setY((byte) 3);
-                    if (isInCheck(player, pieces))
+                    board.selected.setY((byte) 3);
+                    if (isInCheck(board.player, board.pieces))
                     {
-                        selected.setY((byte) 4);
+                        board.selected.setY((byte) 4);
                         return false;
                     }
-                    selected.setY((byte) 2);
-                    if (isInCheck(player, pieces))
+                    board.selected.setY((byte) 2);
+                    if (isInCheck(board.player, board.pieces))
                     {
-                        selected.setY((byte) 4);
+                        board.selected.setY((byte) 4);
                         return false;
                     }
-                    selected.setY((byte) 4);
+                    board.selected.setY((byte) 4);
                     return true;
                 }
                 else
                 {
-                    selected.setY((byte) 5);
-                    if (isInCheck(player, pieces))
+                    board.selected.setY((byte) 5);
+                    if (isInCheck(board.player, board.pieces))
                     {
-                        selected.setY((byte) 4);
+                        board.selected.setY((byte) 4);
                         return false;
                     }
-                    selected.setY((byte) 6);
-                    if (isInCheck(player, pieces))
+                    board.selected.setY((byte) 6);
+                    if (isInCheck(board.player, board.pieces))
                     {
-                        selected.setY((byte) 4);
+                        board.selected.setY((byte) 4);
                         return false;
                     }
-                    selected.setY((byte) 4);
+                    board.selected.setY((byte) 4);
                     return true;
                 }
             }
         }
-        else if (!p.isMoveAllowed(x, y) && !p.isAttackAllowed(x, y) || player != p.isColour())
+        else if (!p.isMoveAllowed(x, y) && !p.isAttackAllowed(x, y) || board.player != p.isColour())
             return false;
-        else if (enPassantPosition != nuller && p instanceof Pawn)
+        else if (board.enPassantPosition != board.nuller && p instanceof Pawn)
         {
-            if (enPassantPosition.getX() == x && enPassantPosition.getY() == y)
+            if (board.enPassantPosition.getX() == x && board.enPassantPosition.getY() == y)
                 return p.isAttackAllowed(x, y);
         }
         else if ((p instanceof Bishop || p instanceof Rook || p instanceof Queen || p instanceof Pawn))
@@ -331,7 +392,7 @@ public class Minimax extends AppCompatActivity
 
             boolean blocked = false;
 
-            Iterator<Piece> iterator = pieces.iterator();
+            Iterator<Piece> iterator = board.pieces.iterator();
             Piece blocker;
 
             if ((diffX > 1 || diffX < -1) || (diffY > 1 || diffY < -1))
@@ -398,17 +459,17 @@ public class Minimax extends AppCompatActivity
 
         }
 
-        Piece toBeRemoved = nuller;
+        Piece toBeRemoved = board.nuller;
         Piece a;
         boolean attacking = false;
-        Iterator<Piece> iterator = pieces.iterator();
+        Iterator<Piece> iterator = board.pieces.iterator();
         while (iterator.hasNext())
         {
             a = iterator.next();
             if (a.getX() == x && a.getY() == y)
             {
                 attacking = true;
-                if (a.isColour() == p.isColour() || !p.isAttackAllowed(x, y))
+                if (a.isColour() == p.isColour() || !p.isAttackAllowed(x, y) || a instanceof King)
                     return false;
                 else
                 {
@@ -422,7 +483,7 @@ public class Minimax extends AppCompatActivity
 
         if (!attacking && !p.isMoveAllowed(x, y))
         {
-            if (toBeRemoved != nuller)
+            if (toBeRemoved != board.nuller)
             {
                 toBeRemoved.setY(y);
                 toBeRemoved.setX(x);
@@ -433,11 +494,11 @@ public class Minimax extends AppCompatActivity
         byte originalY = p.getY();
         p.setX(x);
         p.setY(y);
-        if (isInCheck(p.isColour(), pieces))
+        if (isInCheck(p.isColour(), board.pieces))
         {
             p.setX(originalX);
             p.setY(originalY);
-            if (toBeRemoved != nuller)
+            if (toBeRemoved != board.nuller)
             {
                 toBeRemoved.setY(y);
                 toBeRemoved.setX(x);
@@ -448,7 +509,7 @@ public class Minimax extends AppCompatActivity
         {
             p.setX(originalX);
             p.setY(originalY);
-            if (toBeRemoved != nuller)
+            if (toBeRemoved != board.nuller)
             {
                 toBeRemoved.setY(y);
                 toBeRemoved.setX(x);
@@ -457,66 +518,70 @@ public class Minimax extends AppCompatActivity
         }
     }
 
-    private boolean makeMove(ArrayList<Piece> pieces, Piece selected, byte tempX, byte tempY)
+    protected static boolean makeMove(Board board, Piece moving, byte tempX, byte tempY)
     {
 
-        /*for (Piece p : pieces)
-            if (p.getX() == selected.getX() && p.getY() == selected.getY())
+        for (Piece p : board.pieces)
+            if (p.getX() == moving.getX() && p.getY() == moving.getY())
             {
-                selected = p;
+                moving = p;
                 break;
-            } */
+            }
+
+        Piece takenPiece = null;
 
         boolean resetEnPassant = true;
 
         byte x = tempX;
         byte y = tempY;
 
-        if (selected instanceof Pawn)
+        if (moving instanceof Pawn)
         {
             // next to if's prepare en passant:
-            if (selected.isColour() && selected.getX() == 6 && tempX == 4)
+            if (moving.isColour() && moving.getX() == 6 && tempX == 4)
             {
-                enPassantPosition = new Piece();
-                enPassantPosition.setX((byte) 5);
-                enPassantPosition.setY(selected.getY());
+                board.enPassantPosition = new Piece();
+                board.enPassantPosition.setX((byte) 5);
+                board.enPassantPosition.setY(moving.getY());
                 resetEnPassant = false;
 //                                        enPassantPosition.setColour(true);
             }
-            else if (!selected.isColour() && selected.getX() == 1 && tempX == 3)
+            else if (!moving.isColour() && moving.getX() == 1 && tempX == 3)
             {
-                enPassantPosition = new Piece();
-                enPassantPosition.setX((byte) 2);
-                enPassantPosition.setY(selected.getY());
+                board.enPassantPosition = new Piece();
+                board.enPassantPosition.setX((byte) 2);
+                board.enPassantPosition.setY(moving.getY());
                 resetEnPassant = false;
 //                                        enPassantPosition.setColour(false);
             }
-            else if (enPassantPosition != nuller && enPassantPosition.getX() == tempX && enPassantPosition.getY() == tempY)
+            else if (board.enPassantPosition != board.nuller && board.enPassantPosition.getX() == tempX && board.enPassantPosition.getY() == tempY)
             {
                 // find the pawn that needs to be removed:
-                if (player)
+                if (board.player)
                     x = (byte) 3;
                 else
                     x = (byte) 4;
 
             }
-            else if ((selected.isColour() && tempX == 0) || (!selected.isColour() && tempX == 7))
+            else if ((moving.isColour() && tempX == 0) || (!moving.isColour() && tempX == 7))
             {
                 // promotion to Queen here:
+                boolean colourSelected = moving.isColour();
                 // remove the pawn:
-                selected.setX((byte) -1);
-                selected.setY((byte) -1);
+                moving.setX((byte) -1);
+                moving.setY((byte) -1);
+//                pieces.remove(moving);
                 // add the Queen:
-                selected = new Queen(selected.isColour());
-                pieces.add(selected);
+                moving = new Queen(colourSelected);
+                board.pieces.add(moving);
             }
         }
 
 
-        if (selected instanceof King)
+        if (moving instanceof King)
         {
             byte firstRank;
-            if (selected.isColour())
+            if (moving.isColour())
             {
                 firstRank = 7;
             }
@@ -527,99 +592,103 @@ public class Minimax extends AppCompatActivity
 
             if (tempX == firstRank && tempY == 2)
             {
-                for (Piece p : pieces)
-                    if (p instanceof Rook && p.getX() == firstRank && p.getY() == 0)
-                    {
-                        p.setY((byte) 3);
-                    }
+                if (!((King) moving).moved)
+                    for (Piece p : board.pieces)
+                        if (p instanceof Rook && p.getX() == firstRank && p.getY() == 0 && !((Rook) p).moved)
+                        {
+                            p.setY((byte) 3);
+                        }
             }
             else if (tempX == firstRank && tempY == 6)
             {
-                for (Piece p : pieces)
-                    if (p instanceof Rook && p.getX() == firstRank && p.getY() == 7)
-                    {
-                        p.setY((byte) 5);
-                    }
+                if (!((King) moving).moved)
+                    for (Piece p : board.pieces)
+                        if (p instanceof Rook && p.getX() == firstRank && p.getY() == 7 && !((Rook) p).moved)
+                        {
+                            p.setY((byte) 5);
+                        }
 
             }
-            ((King) selected).moved = true;
+            ((King) moving).moved = true;
         }
-        else if (selected instanceof Rook)
+        else if (moving instanceof Rook)
         {
-            ((Rook) selected).moved = true;
+            ((Rook) moving).moved = true;
         }
 
-        selected.setX(tempX);
-        selected.setY(tempY);
+        moving.setX(tempX);
+        moving.setY(tempY);
 
         boolean wasRemoved = false;
 
-        Iterator<Piece> iterator = pieces.iterator();
+        Iterator<Piece> iterator = board.pieces.iterator();
         Piece p;
         while (iterator.hasNext())
         {
             p = iterator.next();
-            if (p != selected && p.getX() == x && p.getY() == y)
+            if (p != moving && p.getX() == x && p.getY() == y)
             {
                 p.setX((byte) -1);
                 p.setY((byte) -1);
-                taken.add(p);
+                takenPiece = p;
+//                pieces.remove(p);
+                board.taken.add(p);
                 wasRemoved = true;
                 break;
             }
         }
 
         if (resetEnPassant)
-            enPassantPosition = nuller;
+            board.enPassantPosition = board.nuller;
 
         return wasRemoved;
     }
 
-    private boolean hasMoves(boolean player, ArrayList<Piece> pieces)
+    protected static boolean hasMoves(Board board)
     {
         Piece p;
-        pieces = copyList(pieces);
-        Iterator<Piece> iterator = pieces.iterator();
+//        pieces = copyList(pieces);
+        Iterator<Piece> iterator = board.pieces.iterator();
         while (iterator.hasNext())
         {
             p = iterator.next();
 
             if (p instanceof Pawn)
             {
-                byte pawnPassantStartingRank = player ? (byte) 6 : 1;
-                byte pawnPassantTargetRank = player ? (byte) 4 : 3;
-                if (p.getX() == pawnPassantStartingRank && isMoveLegal(player, p, pieces, pawnPassantTargetRank, p.getY()))
+                byte pawnPassantStartingRank = board.player ? (byte) 6 : 1;
+                byte pawnPassantTargetRank = board.player ? (byte) 4 : 3;
+                if (p.getX() == pawnPassantStartingRank && isMoveLegal(board, p, pawnPassantTargetRank, p.getY()))
                     return true;
 
-                byte direction = player ? (byte) -1 : 1;
-                if (isMoveLegal(player, p, pieces, (byte) (p.getX() + direction), p.getY())
-                        || isMoveLegal(player, p, pieces, (byte) (p.getX() + direction), (byte) (p.getY() + 1))
-                        || isMoveLegal(player, p, pieces, (byte) (p.getX() + direction), (byte) (p.getY() - 1)))
+                byte direction = board.player ? (byte) -1 : 1;
+                if (isMoveLegal(board, p, (byte) (p.getX() + direction), p.getY())
+                        || isMoveLegal(board, p, (byte) (p.getX() + direction), (byte) (p.getY() + 1))
+                        || isMoveLegal(board, p, (byte) (p.getX() + direction), (byte) (p.getY() - 1)))
                     return true;
             }
             else if (p instanceof Knight)
             {
-                if (isMoveLegal(player, p, pieces, (byte) (p.getX() - 1), (byte) (p.getY() - 2))
-                        || isMoveLegal(player, p, pieces, (byte) (p.getX() - 1), (byte) (p.getY() + 2))
-                        || isMoveLegal(player, p, pieces, (byte) (p.getX() - 2), (byte) (p.getY() - 1))
-                        || isMoveLegal(player, p, pieces, (byte) (p.getX() - 2), (byte) (p.getY() + 1))
-                        || isMoveLegal(player, p, pieces, (byte) (p.getX() + 1), (byte) (p.getY() - 2))
-                        || isMoveLegal(player, p, pieces, (byte) (p.getX() + 1), (byte) (p.getY() + 2))
-                        || isMoveLegal(player, p, pieces, (byte) (p.getX() + 2), (byte) (p.getY() - 1))
-                        || isMoveLegal(player, p, pieces, (byte) (p.getX() + 2), (byte) (p.getY() + 1)))
+                if (isMoveLegal(board, p, (byte) (p.getX() - 1), (byte) (p.getY() - 2))
+                        || isMoveLegal(board, p, (byte) (p.getX() - 1), (byte) (p.getY() + 2))
+                        || isMoveLegal(board, p, (byte) (p.getX() - 2), (byte) (p.getY() - 1))
+                        || isMoveLegal(board, p, (byte) (p.getX() - 2), (byte) (p.getY() + 1))
+                        || isMoveLegal(board, p, (byte) (p.getX() + 1), (byte) (p.getY() - 2))
+                        || isMoveLegal(board, p, (byte) (p.getX() + 1), (byte) (p.getY() + 2))
+                        || isMoveLegal(board, p, (byte) (p.getX() + 2), (byte) (p.getY() - 1))
+                        || isMoveLegal(board, p, (byte) (p.getX() + 2), (byte) (p.getY() + 1)))
                     return true;
 
             }
             else if (p instanceof King)
             {
-                if (isMoveLegal(player, p, pieces, (byte) (p.getX() - 1), (byte) (p.getY() - 1))
-                        || isMoveLegal(player, p, pieces, (byte) (p.getX() - 1), (byte) (p.getY()))
-                        || isMoveLegal(player, p, pieces, (byte) (p.getX() - 1), (byte) (p.getY() + 1))
-                        || isMoveLegal(player, p, pieces, (byte) (p.getX()), (byte) (p.getY() - 1))
-                        || isMoveLegal(player, p, pieces, (byte) (p.getX()), (byte) (p.getY() + 1))
-                        || isMoveLegal(player, p, pieces, (byte) (p.getX() + 1), (byte) (p.getY() - 1))
-                        || isMoveLegal(player, p, pieces, (byte) (p.getX() + 1), (byte) (p.getY()))
-                        || isMoveLegal(player, p, pieces, (byte) (p.getX() + 1), (byte) (p.getY() + 1)))
+                if (isMoveLegal(board, p, (byte) (p.getX() - 1), (byte) (p.getY() - 1))
+                        || isMoveLegal(board, p, (byte) (p.getX() - 1), (byte) (p.getY()))
+                        || isMoveLegal(board, p, (byte) (p.getX() - 1), (byte) (p.getY() + 1))
+                        || isMoveLegal(board, p, (byte) (p.getX()), (byte) (p.getY() - 1))
+                        || isMoveLegal(board, p, (byte) (p.getX()), (byte) (p.getY() + 1))
+                        || isMoveLegal(board, p, (byte) (p.getX() + 1), (byte) (p.getY() - 1))
+                        || isMoveLegal(board, p, (byte) (p.getX() + 1), (byte) (p.getY()))
+                        || isMoveLegal(board, p, (byte) (p.getX() + 1), (byte) (p.getY() + 1)))
                     return true;
             }
             else
@@ -628,10 +697,10 @@ public class Minimax extends AppCompatActivity
                 {
                     for (byte posChanger = 1; posChanger < 8; posChanger++)
                     {
-                        if (isMoveLegal(player, p, pieces, (byte) (p.getX() - posChanger), (byte) (p.getY() - posChanger))
-                                || isMoveLegal(player, p, pieces, (byte) (p.getX() - posChanger), (byte) (p.getY() + posChanger))
-                                || isMoveLegal(player, p, pieces, (byte) (p.getX() + posChanger), (byte) (p.getY() - posChanger))
-                                || isMoveLegal(player, p, pieces, (byte) (p.getX() + posChanger), (byte) (p.getY() + posChanger)))
+                        if (isMoveLegal(board, p, (byte) (p.getX() - posChanger), (byte) (p.getY() - posChanger))
+                                || isMoveLegal(board, p, (byte) (p.getX() - posChanger), (byte) (p.getY() + posChanger))
+                                || isMoveLegal(board, p, (byte) (p.getX() + posChanger), (byte) (p.getY() - posChanger))
+                                || isMoveLegal(board, p, (byte) (p.getX() + posChanger), (byte) (p.getY() + posChanger)))
                             return true;
                     }
                 }
@@ -639,10 +708,10 @@ public class Minimax extends AppCompatActivity
                 {
                     for (byte posChanger = 1; posChanger < 8; posChanger++)
                     {
-                        if (isMoveLegal(player, p, pieces, (byte) (p.getX() - posChanger), (byte) (p.getY()))
-                                || isMoveLegal(player, p, pieces, (byte) (p.getX() + posChanger), (byte) (p.getY()))
-                                || isMoveLegal(player, p, pieces, (byte) (p.getX()), (byte) (p.getY() - posChanger))
-                                || isMoveLegal(player, p, pieces, (byte) (p.getX()), (byte) (p.getY() + posChanger)))
+                        if (isMoveLegal(board, p, (byte) (p.getX() - posChanger), (byte) (p.getY()))
+                                || isMoveLegal(board, p, (byte) (p.getX() + posChanger), (byte) (p.getY()))
+                                || isMoveLegal(board, p, (byte) (p.getX()), (byte) (p.getY() - posChanger))
+                                || isMoveLegal(board, p, (byte) (p.getX()), (byte) (p.getY() + posChanger)))
                             return true;
                     }
                 }
@@ -653,75 +722,75 @@ public class Minimax extends AppCompatActivity
         return false;
     }
 
-    private ArrayList<Move> listPossibleMoves(boolean player, ArrayList<Piece> pieces)
+    protected static ArrayList<Move> listPossibleMoves(Board board)
     {
         ArrayList<Move> possibleMoves = new ArrayList<>();
 
         Piece p;
         Coord source, target;
         Move adder;
-        pieces = copyList(pieces);
-        Iterator<Piece> iterator = pieces.iterator();
+//        board.pieces = copyList(board.pieces);
+        Iterator<Piece> iterator = board.pieces.iterator();
         while (iterator.hasNext())
         {
             p = iterator.next();
             source = new Coord(p.getX(), p.getY());
 
-            if (p.isColour() != player)
+            if (p.isColour() != board.player)
                 continue;
 
             if (p instanceof Pawn)
             {
-                byte pawnPassantStartingRank = player ? (byte) 6 : 1;
-                byte pawnPassantTargetRank = player ? (byte) 4 : 3;
-                if (p.getX() == pawnPassantStartingRank && isMoveLegal(player, p, pieces, pawnPassantTargetRank, p.getY()))
+                byte pawnPassantStartingRank = board.player ? (byte) 6 : 1;
+                byte pawnPassantTargetRank = board.player ? (byte) 4 : 3;
+                if (p.getX() == pawnPassantStartingRank && isMoveLegal(board, p, pawnPassantTargetRank, p.getY()))
                     possibleMoves.add(new Move(source, new Coord(pawnPassantTargetRank, p.getY())));
 
-                byte direction = player ? (byte) -1 : 1;
-                if (isMoveLegal(player, p, pieces, (byte) (p.getX() + direction), p.getY()))
+                byte direction = board.player ? (byte) -1 : 1;
+                if (isMoveLegal(board, p, (byte) (p.getX() + direction), p.getY()))
                     possibleMoves.add(new Move(source, new Coord(p.getX() + direction, p.getY())));
-                if (isMoveLegal(player, p, pieces, (byte) (p.getX() + direction), (byte) (p.getY() + 1)))
+                if (isMoveLegal(board, p, (byte) (p.getX() + direction), (byte) (p.getY() + 1)))
                     possibleMoves.add(new Move(source, new Coord(p.getX() + direction, p.getY() + 1)));
-                if (isMoveLegal(player, p, pieces, (byte) (p.getX() + direction), (byte) (p.getY() - 1)))
+                if (isMoveLegal(board, p, (byte) (p.getX() + direction), (byte) (p.getY() - 1)))
                     possibleMoves.add(new Move(source, new Coord(p.getX() + direction, p.getY() - 1)));
             }
             else if (p instanceof Knight)
             {
-                if (isMoveLegal(player, p, pieces, (byte) (p.getX() - 1), (byte) (p.getY() - 2)))
+                if (isMoveLegal(board, p, (byte) (p.getX() - 1), (byte) (p.getY() - 2)))
                     possibleMoves.add(new Move(source, new Coord(p.getX() - 1, p.getY() - 2)));
-                if (isMoveLegal(player, p, pieces, (byte) (p.getX() - 1), (byte) (p.getY() + 2)))
+                if (isMoveLegal(board, p, (byte) (p.getX() - 1), (byte) (p.getY() + 2)))
                     possibleMoves.add(new Move(source, new Coord(p.getX() - 1, p.getY() + 2)));
-                if (isMoveLegal(player, p, pieces, (byte) (p.getX() - 2), (byte) (p.getY() - 1)))
+                if (isMoveLegal(board, p, (byte) (p.getX() - 2), (byte) (p.getY() - 1)))
                     possibleMoves.add(new Move(source, new Coord(p.getX() - 2, p.getY() - 1)));
-                if (isMoveLegal(player, p, pieces, (byte) (p.getX() - 2), (byte) (p.getY() + 1)))
+                if (isMoveLegal(board, p, (byte) (p.getX() - 2), (byte) (p.getY() + 1)))
                     possibleMoves.add(new Move(source, new Coord(p.getX() - 2, p.getY() + 1)));
-                if (isMoveLegal(player, p, pieces, (byte) (p.getX() + 1), (byte) (p.getY() - 2)))
+                if (isMoveLegal(board, p, (byte) (p.getX() + 1), (byte) (p.getY() - 2)))
                     possibleMoves.add(new Move(source, new Coord(p.getX() + 1, p.getY() - 2)));
-                if (isMoveLegal(player, p, pieces, (byte) (p.getX() + 1), (byte) (p.getY() + 2)))
+                if (isMoveLegal(board, p, (byte) (p.getX() + 1), (byte) (p.getY() + 2)))
                     possibleMoves.add(new Move(source, new Coord(p.getX() + 1, p.getY() + 2)));
-                if (isMoveLegal(player, p, pieces, (byte) (p.getX() + 2), (byte) (p.getY() - 1)))
+                if (isMoveLegal(board, p, (byte) (p.getX() + 2), (byte) (p.getY() - 1)))
                     possibleMoves.add(new Move(source, new Coord(p.getX() + 2, p.getY() - 1)));
-                if (isMoveLegal(player, p, pieces, (byte) (p.getX() + 2), (byte) (p.getY() + 1)))
+                if (isMoveLegal(board, p, (byte) (p.getX() + 2), (byte) (p.getY() + 1)))
                     possibleMoves.add(new Move(source, new Coord(p.getX() + 2, p.getY() + 1)));
 
             }
             else if (p instanceof King)
             {
-                if (isMoveLegal(player, p, pieces, (byte) (p.getX() - 1), (byte) (p.getY() - 1)))
+                if (isMoveLegal(board, p, (byte) (p.getX() - 1), (byte) (p.getY() - 1)))
                     possibleMoves.add(new Move(source, new Coord(p.getX() - 1, p.getY() - 1)));
-                if (isMoveLegal(player, p, pieces, (byte) (p.getX() - 1), (byte) (p.getY())))
+                if (isMoveLegal(board, p, (byte) (p.getX() - 1), (byte) (p.getY())))
                     possibleMoves.add(new Move(source, new Coord(p.getX() - 1, p.getY())));
-                if (isMoveLegal(player, p, pieces, (byte) (p.getX() - 1), (byte) (p.getY() + 1)))
+                if (isMoveLegal(board, p, (byte) (p.getX() - 1), (byte) (p.getY() + 1)))
                     possibleMoves.add(new Move(source, new Coord(p.getX() - 1, p.getY() + 1)));
-                if (isMoveLegal(player, p, pieces, (byte) (p.getX()), (byte) (p.getY() - 1)))
+                if (isMoveLegal(board, p, (byte) (p.getX()), (byte) (p.getY() - 1)))
                     possibleMoves.add(new Move(source, new Coord(p.getX(), p.getY() - 1)));
-                if (isMoveLegal(player, p, pieces, (byte) (p.getX()), (byte) (p.getY() + 1)))
+                if (isMoveLegal(board, p, (byte) (p.getX()), (byte) (p.getY() + 1)))
                     possibleMoves.add(new Move(source, new Coord(p.getX(), p.getY() + 1)));
-                if (isMoveLegal(player, p, pieces, (byte) (p.getX() + 1), (byte) (p.getY() - 1)))
+                if (isMoveLegal(board, p, (byte) (p.getX() + 1), (byte) (p.getY() - 1)))
                     possibleMoves.add(new Move(source, new Coord(p.getX() + 1, p.getY() - 1)));
-                if (isMoveLegal(player, p, pieces, (byte) (p.getX() + 1), (byte) (p.getY())))
+                if (isMoveLegal(board, p, (byte) (p.getX() + 1), (byte) (p.getY())))
                     possibleMoves.add(new Move(source, new Coord(p.getX() + 1, p.getY())));
-                if (isMoveLegal(player, p, pieces, (byte) (p.getX() + 1), (byte) (p.getY() + 1)))
+                if (isMoveLegal(board, p, (byte) (p.getX() + 1), (byte) (p.getY() + 1)))
                     possibleMoves.add(new Move(source, new Coord(p.getX() + 1, p.getY() + 1)));
             }
             else
@@ -730,13 +799,13 @@ public class Minimax extends AppCompatActivity
                 {
                     for (byte posChanger = 1; posChanger < 8; posChanger++)
                     {
-                        if (isMoveLegal(player, p, pieces, (byte) (p.getX() - posChanger), (byte) (p.getY() - posChanger)))
+                        if (isMoveLegal(board, p, (byte) (p.getX() - posChanger), (byte) (p.getY() - posChanger)))
                             possibleMoves.add(new Move(source, new Coord(p.getX() - posChanger, p.getY() - posChanger)));
-                        if (isMoveLegal(player, p, pieces, (byte) (p.getX() - posChanger), (byte) (p.getY() + posChanger)))
+                        if (isMoveLegal(board, p, (byte) (p.getX() - posChanger), (byte) (p.getY() + posChanger)))
                             possibleMoves.add(new Move(source, new Coord(p.getX() - posChanger, p.getY() + posChanger)));
-                        if (isMoveLegal(player, p, pieces, (byte) (p.getX() + posChanger), (byte) (p.getY() - posChanger)))
+                        if (isMoveLegal(board, p, (byte) (p.getX() + posChanger), (byte) (p.getY() - posChanger)))
                             possibleMoves.add(new Move(source, new Coord(p.getX() + posChanger, p.getY() - posChanger)));
-                        if (isMoveLegal(player, p, pieces, (byte) (p.getX() + posChanger), (byte) (p.getY() + posChanger)))
+                        if (isMoveLegal(board, p, (byte) (p.getX() + posChanger), (byte) (p.getY() + posChanger)))
                             possibleMoves.add(new Move(source, new Coord(p.getX() + posChanger, p.getY() + posChanger)));
                     }
                 }
@@ -744,13 +813,13 @@ public class Minimax extends AppCompatActivity
                 {
                     for (byte posChanger = 1; posChanger < 8; posChanger++)
                     {
-                        if (isMoveLegal(player, p, pieces, (byte) (p.getX() - posChanger), (byte) (p.getY())))
+                        if (isMoveLegal(board, p, (byte) (p.getX() - posChanger), (byte) (p.getY())))
                             possibleMoves.add(new Move(source, new Coord(p.getX() - posChanger, p.getY())));
-                        if (isMoveLegal(player, p, pieces, (byte) (p.getX() + posChanger), (byte) (p.getY())))
+                        if (isMoveLegal(board, p, (byte) (p.getX() + posChanger), (byte) (p.getY())))
                             possibleMoves.add(new Move(source, new Coord(p.getX() + posChanger, p.getY())));
-                        if (isMoveLegal(player, p, pieces, (byte) (p.getX()), (byte) (p.getY() - posChanger)))
+                        if (isMoveLegal(board, p, (byte) (p.getX()), (byte) (p.getY() - posChanger)))
                             possibleMoves.add(new Move(source, new Coord(p.getX(), p.getY() - posChanger)));
-                        if (isMoveLegal(player, p, pieces, (byte) (p.getX()), (byte) (p.getY() + posChanger)))
+                        if (isMoveLegal(board, p, (byte) (p.getX()), (byte) (p.getY() + posChanger)))
                             possibleMoves.add(new Move(source, new Coord(p.getX(), p.getY() + posChanger)));
                     }
                 }
@@ -761,23 +830,53 @@ public class Minimax extends AppCompatActivity
         return possibleMoves;
     }
 
-    private double staticEvaluation(boolean player, ArrayList<Piece> pieces)
+    protected static double staticEvaluation(Board board)
     {
         double score = 0.0;
         int white, black;
-        Iterator<Piece> iterator = pieces.iterator();
+        Iterator<Piece> iterator;
         Piece p;
-        ArrayList<Move> moves = listPossibleMoves(player, pieces);
-        if (isInCheck(player, pieces) && moves.isEmpty())
+
+        Iterator<Piece> scndIter;
+        Piece other;
+
+        /*
+            CHECKMATE IS WORTH 10000
+         */
+        ArrayList<Move> moves = listPossibleMoves(board);
+        if (isInCheck(board.player, board.pieces) && moves.isEmpty())
         {
-            if (player)
-                return -1000.0;
+            if (board.player)
+                return -10000.0;
             else
-                return 1000.0;
+                return 10000.0;
         }
 
-        if (moves.isEmpty() && !isInCheck(player, pieces))
+        /*
+            STALEMATE GIVES 0
+         */
+
+        if (moves.isEmpty() && !isInCheck(board.player, board.pieces))
             return 0.0;
+
+        // resetting defense:
+        iterator = board.pieces.iterator();
+
+        while (iterator.hasNext())
+        {
+            p = iterator.next();
+            p.setDefense(0);
+            if (p instanceof Pawn)
+                ((Pawn) p).setPawnProtected(false);
+        }
+
+
+        /*
+            MATERIAL EVALUATION
+            According to Larry Kaufman with slight alteration: B > N
+         */
+
+        iterator = board.pieces.iterator();
 
         while (iterator.hasNext())
         {
@@ -789,40 +888,201 @@ public class Minimax extends AppCompatActivity
                 else
                     score -= (double)p.getValue();
 
-            }
-        }
+                /*
+                    DEFENSE EVALUATION
+                    Adding defenders or attackers
+                 */
 
-        iterator = pieces.iterator();
+                scndIter = board.pieces.iterator();
 
-        for (byte i = 0; i < 8; i++)
-        {
-            for (byte j = 0; j < 8; j++)
-            {
-                white = 0;
-                black = 0;
-                while (iterator.hasNext())
+                while (scndIter.hasNext())
                 {
-                    p = iterator.next();
-                    if (isMoveLegal(player, p, pieces, i,j))
+                    other = scndIter.next();
+                    if (other != p)
                     {
-                        if (p.isColour())
-                            white++;
+                        if (other.isColour() == p.isColour())
+                        {       // defender:
+                            // reverse the colour:
+                            other.setColour(!other.isColour());
+
+                            if (isMoveLegal(board, p, other.getX(), other.getY()))
+                            {
+                                other.addDefender();
+                                if (other instanceof Pawn)
+                                    ((Pawn) other).setPawnProtected(true);
+                            }
+
+                            // reset the colour back:
+                            other.setColour(!other.isColour());
+                        }
                         else
-                            black++;
+                        {       // attacker:
+                            if (isMoveLegal(board, p, other.getX(), other.getY()))
+                                other.addAttacker();
+                        }
                     }
                 }
 
-                score += (white - black) * boardValues[i][j] * 10.0;
             }
         }
 
-//        if (score != 0.0)
-//            System.err.println(score);
+        /*
+            PIECE SQUARE TABLES
+         */
+
+        iterator = board.pieces.iterator();
+        byte x, y;
+
+
+        while (iterator.hasNext())
+        {
+            p = iterator.next();
+            if (p.getX() == -1 || p.getY() == -1)
+                continue;
+
+            if (!p.isColour())
+            {
+                x = (byte)(7 - p.getX());
+            }
+            else
+                x = p.getX();
+
+            y = p.getY();
+
+            double tempScore = 0.0;
+
+            if (p instanceof Pawn)
+            {
+                tempScore += pieceSquarTable[0][8*x + y];
+            }
+            else if (p instanceof Knight)
+            {
+                tempScore += pieceSquarTable[1][8*x + y];
+            }
+            else if (p instanceof Bishop)
+            {
+                tempScore += pieceSquarTable[2][8*x + y];
+            }
+            else if (p instanceof Rook)
+            {
+                tempScore += pieceSquarTable[3][8 * x + y];
+            }
+            else if (p instanceof Queen)
+            {
+                tempScore += pieceSquarTable[4][8*x + y];
+            }
+            else if (p instanceof King)
+            {
+                tempScore += pieceSquarTable[5][8*x + y];
+            }
+
+            if (p.isColour())
+                score += tempScore;
+            else
+                score -= tempScore;
+        }
+
+        /*
+            PAWN STRUCTURE
+         */
+
+        iterator = board.pieces.iterator();
+        boolean isolated;
+
+        while(iterator.hasNext())
+        {
+            p = iterator.next();
+            isolated  = true;
+
+            if (p instanceof Pawn)
+            {
+                scndIter = board.pieces.iterator();
+
+                while (scndIter.hasNext())
+                {
+                    other = scndIter.next();
+                    if (other != p && other instanceof Pawn && other.isColour() == p.isColour())
+                    {
+                        if (other.getY() == p.getY())
+                        {
+                            //  DOUBLED PAWNS PENALTY:
+                            score -= 100.0;
+                        }
+
+                        // ISOLATED PAWN
+                        isolated &= !(other.getY() + 1 == p.getY() || other.getY() - 1 == p.getY());
+
+                    }
+                }
+
+                scndIter = board.pieces.iterator();
+
+                if(!((Pawn) p).isPawnProtected() && isMoveLegal(board, p, (byte)(p.isColour()?p.getX()-1:p.getX()+1), p.getY()))
+                {
+                    // BACKWARD PAWN
+                    boolean sentryFound = false;
+                    boolean advanceProtected = false;
+                    boolean originalPlayer;
+
+                    // move to look for sentry:
+                    x = p.getX();
+
+                    p.setX((byte)(p.isColour() ? p.getX() - 1 : p.getX() + 1));
+
+                    while (scndIter.hasNext())
+                    {
+                        other = scndIter.next();
+                        if (other instanceof Pawn && other.isColour() != p.isColour())
+                        {
+                            originalPlayer = board.player;
+                            board.player = other.isColour();
+                            if (isMoveLegal(board, other, p.getX(), p.getY()))
+                            {
+                                sentryFound = true;
+                            }
+
+                            board.player = originalPlayer;
+                        }
+                        else if (other instanceof Pawn && other.isColour() == p.isColour())
+                        {
+                            // check if position is protected:
+                            p.setColour(!p.isColour());
+
+                            originalPlayer = board.player;
+                            board.player = other.isColour();
+                            if (isMoveLegal(board, other, p.getX(), p.getY()))
+                            {
+                                advanceProtected = true;
+                            }
+                            board.player = originalPlayer;
+
+                            p.setColour(!p.isColour());
+                        }
+
+                        if (sentryFound && advanceProtected)
+                            break;
+                    }
+
+                    // BACKWARD PAWN PENALTY:
+                    if (sentryFound && !advanceProtected)
+                        score -= 50.0;
+
+
+                    // reset position
+                    p.setX(x);
+                }
+
+                // ISOLATED PAWN PENALTY
+                if (isolated)
+                    score -= 50.0;
+
+            }
+        }
 
         return score;
     }
 
-    private ArrayList<Piece> copyList(ArrayList<Piece> list)
+    private static ArrayList<Piece> copyList(ArrayList<Piece> list)
     {
         Iterator<Piece> it = list.iterator();
         ArrayList<Piece> newList = new ArrayList<>();
@@ -861,8 +1121,8 @@ public class Minimax extends AppCompatActivity
         return newList;
     }
 
-    private Move alfaBeta(boolean player, int maxDepth, ArrayList<Piece> pieces, double alfa, double beta)
-    { // TODO change so that this method returns value and move
+    protected static Move alfaBeta(Board board, int maxDepth, double alfa, double beta)
+    {
 
 //        Piece bestPiece = new Piece();
 //        byte bestX = -1, bestY = -1;
@@ -870,36 +1130,38 @@ public class Minimax extends AppCompatActivity
         returnValue.source = new Coord(-1,-1);
 //        double score;
 //        pieces = copyList(pieces);
-        ArrayList<Move> possibleMoves = listPossibleMoves(player, pieces);
-        if (isInCheck(player, pieces) && possibleMoves.isEmpty())
+        ArrayList<Move> possibleMoves = listPossibleMoves(board);
+//        if (isInCheck(player, pieces) && possibleMoves.isEmpty())
+//        {
+//            if (player)
+//                returnValue.score = -1000;
+//            else
+//                returnValue.score = 1000;
+//            return returnValue;
+//        }
+//        else
+
+        if (possibleMoves.isEmpty() || maxDepth == 0)
         {
-            if (player)
-                returnValue.score = -1000;
-            else
-                returnValue.score = 1000;
+            returnValue.score = staticEvaluation(board);
             return returnValue;
         }
-        else if (possibleMoves.isEmpty() || maxDepth == 0)
-        {
-            returnValue.score = staticEvaluation(player, pieces);
-            return returnValue;
-        }
-        else if (player)
+        else if (board.player)
         {
             returnValue.score = Double.NEGATIVE_INFINITY;
             byte originalX = -1;
             byte originalY = -1;
             Move returned;
 
-            ArrayList<Piece> newList; // new ArrayList<>(pieces);
-            ArrayList<Piece> iterationList = copyList(pieces);
-            Iterator<Piece> piecesIterator = iterationList.iterator();
+            Board newBoard;
             boolean removed = false;
             Piece p = new Piece();
 
             for (Move move : possibleMoves)
             {
-                newList = copyList(pieces);
+                newBoard = board.copyBoard();
+//                ArrayList<Piece> iterationList = copyList(pieces);
+                Iterator<Piece> piecesIterator = newBoard.pieces.iterator();
                 while (piecesIterator.hasNext())
                 {
                     p = piecesIterator.next();
@@ -910,10 +1172,12 @@ public class Minimax extends AppCompatActivity
                 originalX = p.getX();
                 originalY = p.getY();
 
-                if (makeMove(newList, p, move.target.x, move.target.y))
+                if(makeMove(newBoard, p, move.target.x, move.target.y))
                     removed = true;
 
-                returned = alfaBeta(!player, maxDepth - 1, newList, alfa, beta);
+                newBoard.player = !newBoard.player;
+
+                returned = alfaBeta(newBoard, maxDepth - 1, alfa, beta);
 
                 if (returned.score > returnValue.score || (returned.score == returnValue.score && Math.random() > 0.5))
                 {
@@ -924,6 +1188,8 @@ public class Minimax extends AppCompatActivity
 
                 p.setX(originalX);
                 p.setY(originalY);
+
+                /*
 
                 if (removed)
                 {
@@ -938,6 +1204,8 @@ public class Minimax extends AppCompatActivity
 
                     removed = false;
                 }
+
+                */
 
                 if (alfa < returned.score)
                     alfa = returned.score;
@@ -967,7 +1235,7 @@ public class Minimax extends AppCompatActivity
                         {
                             if (isMoveLegal(player, p, newList, i, j))
                             {
-                                if (makeMove(newList, p, i, j))
+                                if (moveBtn(newList, p, i, j))
                                     removed = true;
 
                                 returned = alfaBeta(!player, maxDepth - 1, newList, alfa, beta);
@@ -1021,15 +1289,15 @@ public class Minimax extends AppCompatActivity
             byte originalY = -1;
             Move returned;
 
-            ArrayList<Piece> newList; // = copyList(pieces);
-            ArrayList<Piece> iterationList = copyList(pieces);
-            Iterator<Piece> piecesIterator = iterationList.iterator();
+            Board newBoard; // = copyList(pieces);
             boolean removed = false;
             Piece p = new Piece();
 
             for (Move move : possibleMoves)
             {
-                newList = copyList(pieces);
+                newBoard = board.copyBoard();
+//                ArrayList<Piece> iterationList = copyList(pieces);
+                Iterator<Piece> piecesIterator = newBoard.pieces.iterator();
                 while (piecesIterator.hasNext())
                 {
                     p = piecesIterator.next();
@@ -1040,10 +1308,12 @@ public class Minimax extends AppCompatActivity
                 originalX = p.getX();
                 originalY = p.getY();
 
-                if (makeMove(newList, p, move.target.x, move.target.y))
+                if (makeMove(newBoard, p, move.target.x, move.target.y))
                     removed = true;
 
-                returned = alfaBeta(!player, maxDepth - 1, newList, alfa, beta);
+                newBoard.player = !newBoard.player;
+
+                returned = alfaBeta(newBoard, maxDepth - 1, alfa, beta);
 
                 if (returned.score < returnValue.score || (returned.score == returnValue.score && Math.random() > 0.5))
                 {
@@ -1054,6 +1324,8 @@ public class Minimax extends AppCompatActivity
 
                 p.setX(originalX);
                 p.setY(originalY);
+
+                /*
 
                 if (removed)
                 {
@@ -1068,6 +1340,8 @@ public class Minimax extends AppCompatActivity
 
                     removed = false;
                 }
+
+                */
 
                 if (beta > returned.score)
                     beta = returned.score;
@@ -1099,7 +1373,7 @@ public class Minimax extends AppCompatActivity
                         {
                             if (isMoveLegal(player, p, newList, i, j))
                             {
-                                if (makeMove(newList, p, i, j))
+                                if (moveBtn(newList, p, i, j))
                                     removed = true;
 
                                 returned = alfaBeta(!player, maxDepth - 1, newList, alfa, beta);
@@ -1156,68 +1430,71 @@ public class Minimax extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_minimax);
 
-        // adding Kings to the board
+        board = new Board();
+
+        // adding Kings to the boardButtons
         String tempPos = "e8";
         byte[] coords = toCoord(tempPos);
-        pieces.add(new King(coords[0], coords[1], false));
+        board.pieces.add(new King(coords[0], coords[1], false));
+
         tempPos = "a8";
         coords = toCoord(tempPos);
-        pieces.add(new Rook(coords[0], coords[1], false));
+        board.pieces.add(new Rook(coords[0], coords[1], false));
         tempPos = "b8";
         coords = toCoord(tempPos);
-        pieces.add(new Knight(coords[0], coords[1], false));
+        board.pieces.add(new Knight(coords[0], coords[1], false));
         tempPos = "c8";
         coords = toCoord(tempPos);
-        pieces.add(new Bishop(coords[0], coords[1], false));
+        board.pieces.add(new Bishop(coords[0], coords[1], false));
         tempPos = "d8";
         coords = toCoord(tempPos);
-        pieces.add(new Queen(coords[0], coords[1], false));
+        board.pieces.add(new Queen(coords[0], coords[1], false));
         tempPos = "f8";
         coords = toCoord(tempPos);
-        pieces.add(new Bishop(coords[0], coords[1], false));
+        board.pieces.add(new Bishop(coords[0], coords[1], false));
         tempPos = "g8";
         coords = toCoord(tempPos);
-        pieces.add(new Knight(coords[0], coords[1], false));
+        board.pieces.add(new Knight(coords[0], coords[1], false));
         tempPos = "h8";
         coords = toCoord(tempPos);
-        pieces.add(new Rook(coords[0], coords[1], false));
+        board.pieces.add(new Rook(coords[0], coords[1], false));
         for (int i = 0; i < 8; i++)
         {
             tempPos = ((char) ('a' + i) + "7");
             coords = toCoord(tempPos);
-            pieces.add(new Pawn(coords[0], coords[1], false));
+            board.pieces.add(new Pawn(coords[0], coords[1], false));
         }
-
 
         tempPos = "e1";
         coords = toCoord(tempPos);
-        pieces.add(new King(coords[0], coords[1], true));
+        board.pieces.add(new King(coords[0], coords[1], true));
+
         tempPos = "a1";
         coords = toCoord(tempPos);
-        pieces.add(new Rook(coords[0], coords[1], true));
+        board.pieces.add(new Rook(coords[0], coords[1], true));
         tempPos = "b1";
         coords = toCoord(tempPos);
-        pieces.add(new Knight(coords[0], coords[1], true));
+        board.pieces.add(new Knight(coords[0], coords[1], true));
         tempPos = "c1";
         coords = toCoord(tempPos);
-        pieces.add(new Bishop(coords[0], coords[1], true));
+        board.pieces.add(new Bishop(coords[0], coords[1], true));
         tempPos = "d1";
         coords = toCoord(tempPos);
-        pieces.add(new Queen(coords[0], coords[1], true));
+        board.pieces.add(new Queen(coords[0], coords[1], true));
         tempPos = "f1";
         coords = toCoord(tempPos);
-        pieces.add(new Bishop(coords[0], coords[1], true));
+        board.pieces.add(new Bishop(coords[0], coords[1], true));
         tempPos = "g1";
         coords = toCoord(tempPos);
-        pieces.add(new Knight(coords[0], coords[1], true));
+        board.pieces.add(new Knight(coords[0], coords[1], true));
         tempPos = "h1";
         coords = toCoord(tempPos);
-        pieces.add(new Rook(coords[0], coords[1], true));
+        board.pieces.add(new Rook(coords[0], coords[1], true));
         for (int i = 0; i < 8; i++)
         {
             tempPos = ((char) ('a' + i) + "2");
             coords = toCoord(tempPos);
-            pieces.add(new Pawn(coords[0], coords[1], true));
+            board.pieces.add(new Pawn(coords[0], coords[1], true));
         }
 
 
@@ -1228,17 +1505,17 @@ public class Minimax extends AppCompatActivity
             row = (TableRow) table.getChildAt(i);
             for (byte j = 0; j < 8; j++)
             {
-                board[i][j] = (ImageButton) row.getChildAt(j);
+                boardButtons[i][j] = (ImageButton) row.getChildAt(j);
             }
         }
 
-        updateTheBoard();
+        updateTheBoard(board, boardButtons);
 
         for (byte i = 0; i < 8; i++)
         {
             for (byte j = 0; j < 8; j++)
             {
-                ImageButton btn = board[i][j];
+                ImageButton btn = boardButtons[i][j];
                 final byte tempX = i;
                 final byte tempY = j;
                 btn.setOnClickListener(new View.OnClickListener()
@@ -1246,19 +1523,22 @@ public class Minimax extends AppCompatActivity
                     @Override
                     public void onClick(View v)
                     {
-                        if (selected != nuller)
+                        if (board.selected != board.nuller)
                         {
-                            if (isMoveLegal(player, selected, pieces, tempX, tempY))
+                            Piece selected = board.selected;
+                            if (isMoveLegal(board, selected, tempX, tempY))
                             {
-                                makeMove(pieces, selected, tempX, tempY);
+                                makeMove(board, selected, tempX, tempY);
 
-                                if (isInCheck(!player, pieces))
+                                board.player = !board.player;
+
+                                if (isInCheck(board.player, board.pieces))
                                 {
 
-                                    if (!hasMoves(!player, pieces))
+                                    if (!hasMoves(board))
                                     {
                                         CharSequence message;
-                                        if (player)
+                                        if (!board.player) // black is in check and has no available moves
                                             message = "Check mate! White has won!";
                                         else
                                             message = "Check mate! Black has won!";
@@ -1282,7 +1562,7 @@ public class Minimax extends AppCompatActivity
                                                 .show();
                                     }
                                 }
-                                else if (!hasMoves(!player, pieces))
+                                else if (!hasMoves(board))
                                     new AlertDialog.Builder(Minimax.this)
                                             .setTitle("Game over")
                                             .setMessage("Stalemate!")
@@ -1302,25 +1582,24 @@ public class Minimax extends AppCompatActivity
                                             })
                                             .show();
 
-                                player = !player;
                             }
 
 
-                            selected = nuller;
+                            board.selected = board.nuller;
                         }
                         else
                         {
-                            for (Piece p : pieces)
+                            for (Piece p : board.pieces)
                             {
-                                if (player == p.isColour() && p.getX() == tempX && p.getY() == tempY)
+                                if (board.player == p.isColour() && p.getX() == tempX && p.getY() == tempY)
                                 {
-                                    selected = p;
+                                    board.selected = p;
                                     break;
                                 }
                             }
                         }
-                        removeTaken();
-                        updateTheBoard();
+                        removeTaken(board);
+                        updateTheBoard(board, boardButtons);
                     }
                 });
             }
@@ -1334,9 +1613,9 @@ public class Minimax extends AppCompatActivity
                                        public void onClick(View v)
                                        {
 
-                                           Move answer = alfaBeta(player, 1, pieces, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                           Move answer = alfaBeta(board, 2, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 
-                                           ArrayList<Move> moves = listPossibleMoves(player, pieces);
+                                           ArrayList<Move> moves = listPossibleMoves(board);
 
                                            if (answer.source.x == -1)
                                            {
@@ -1345,26 +1624,28 @@ public class Minimax extends AppCompatActivity
                                            }
                                            else
                                            {
-                                               Piece movedPiece = nuller;
-                                               for (Piece searched : pieces)
+                                               Piece movedPiece = board.nuller;
+                                               for (Piece searched : board.pieces)
                                                    if (searched.getX() == answer.source.x && searched.getY() == answer.source.y)
                                                    {
                                                        movedPiece = searched;
                                                        break;
                                                    }
 
-                                               makeMove(pieces, movedPiece, answer.target.x, answer.target.y);
+                                               makeMove(board, movedPiece, answer.target.x, answer.target.y);
 //                                               bestPiece = nuller;
 //                                               bestX = -1;
 //                                               bestY = -1;
 
-                                               if (isInCheck(!player, pieces))
+                                               board.player = !board.player;
+
+                                               if (isInCheck(board.player, board.pieces))
                                                {
 
-                                                   if (!hasMoves(!player, pieces))
+                                                   if (!hasMoves(board))
                                                    {
                                                        CharSequence message;
-                                                       if (player)
+                                                       if (!board.player)
                                                            message = "Check mate! White has won!";
                                                        else
                                                            message = "Check mate! Black has won!";
@@ -1388,7 +1669,7 @@ public class Minimax extends AppCompatActivity
                                                                .show();
                                                    }
                                                }
-                                               else if (!hasMoves(!player, pieces))
+                                               else if (!hasMoves(board))
                                                    new AlertDialog.Builder(Minimax.this)
                                                            .setTitle("Game over")
                                                            .setMessage("Stalemate!")
@@ -1408,9 +1689,8 @@ public class Minimax extends AppCompatActivity
                                                            })
                                                            .show();
 
-                                               removeTaken();
-                                               updateTheBoard();
-                                               player = !player;
+                                               removeTaken(board);
+                                               updateTheBoard(board, boardButtons);
                                            }
                                        }
                                    }
@@ -1455,6 +1735,48 @@ public class Minimax extends AppCompatActivity
             this.x = (byte)x;
             this.y = (byte)y;
         }
+    }
+
+    public static class Board
+    {
+        public ArrayList<Piece> pieces;
+        public ArrayList<Piece> taken;
+        public Piece enPassantPosition;
+        public Piece selected;
+        public Piece nuller;
+
+        boolean player;
+
+        public Board()
+        {
+            player = true;
+            nuller = new Piece();
+            selected = nuller;
+            enPassantPosition = nuller;
+
+            pieces = new ArrayList<>();
+            taken = new ArrayList<>();
+        }
+
+        public Board copyBoard()
+        {
+            Board copied = new Board();
+            copied.player = player;
+            copied.pieces = copyList(pieces);
+            copied.taken = copyList(taken);
+
+            if (enPassantPosition != nuller)
+            {
+                copied.enPassantPosition = new Piece();
+                copied.enPassantPosition.setX(enPassantPosition.getX());
+                copied.enPassantPosition.setY(enPassantPosition.getY());
+            }
+            else
+                copied.enPassantPosition = copied.nuller;
+
+            return copied;
+        }
+
     }
 }
 

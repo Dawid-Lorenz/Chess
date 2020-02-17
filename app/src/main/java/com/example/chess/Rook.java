@@ -2,7 +2,7 @@ package com.example.chess;
 
 public class Rook extends Piece {
 
-    private int value = 50;
+    private int value = 525;
     public boolean moved = false;
 
     public Rook(boolean colour) {
