@@ -32,7 +32,7 @@ public class Minimax extends AppCompatActivity
             {0.5, 1, 1, 1, 1, 1, 1, 0.5}
     };
 
-    static int [][] pieceSquarTable =
+    static int [][] pieceSquareTable =
             {
                     { // pawn
                             0,  0,  0,  0,  0,  0,  0,  0,
@@ -836,6 +836,13 @@ public class Minimax extends AppCompatActivity
         int white, black;
         Iterator<Piece> iterator;
         Piece p;
+        String[][] pawnStruct = new String[2][8];
+
+        for (int j = 0; j < 8; j++)
+        {
+            pawnStruct[0][j] = "";
+            pawnStruct[1][j] = "";
+        }
 
         Iterator<Piece> scndIter;
         Piece other;
@@ -953,27 +960,27 @@ public class Minimax extends AppCompatActivity
 
             if (p instanceof Pawn)
             {
-                tempScore += pieceSquarTable[0][8*x + y];
+                tempScore += pieceSquareTable[0][8*x + y];
             }
             else if (p instanceof Knight)
             {
-                tempScore += pieceSquarTable[1][8*x + y];
+                tempScore += pieceSquareTable[1][8*x + y];
             }
             else if (p instanceof Bishop)
             {
-                tempScore += pieceSquarTable[2][8*x + y];
+                tempScore += pieceSquareTable[2][8*x + y];
             }
             else if (p instanceof Rook)
             {
-                tempScore += pieceSquarTable[3][8 * x + y];
+                tempScore += pieceSquareTable[3][8 * x + y];
             }
             else if (p instanceof Queen)
             {
-                tempScore += pieceSquarTable[4][8*x + y];
+                tempScore += pieceSquareTable[4][8*x + y];
             }
             else if (p instanceof King)
             {
-                tempScore += pieceSquarTable[5][8*x + y];
+                tempScore += pieceSquareTable[5][8*x + y];
             }
 
             if (p.isColour())
@@ -987,33 +994,21 @@ public class Minimax extends AppCompatActivity
          */
 
         iterator = board.pieces.iterator();
-        boolean isolated;
+//        boolean isolated;
 
         while(iterator.hasNext())
         {
             p = iterator.next();
-            isolated  = true;
+//            isolated  = true;
 
             if (p instanceof Pawn)
             {
-                scndIter = board.pieces.iterator();
+                if (p.getY() != -1)
+                    if (p.isColour())
+                        pawnStruct[0][p.getY()] += p.getX();
+                    else
+                        pawnStruct[1][p.getY()] += p.getX();
 
-                while (scndIter.hasNext())
-                {
-                    other = scndIter.next();
-                    if (other != p && other instanceof Pawn && other.isColour() == p.isColour())
-                    {
-                        if (other.getY() == p.getY())
-                        {
-                            //  DOUBLED PAWNS PENALTY:
-                            score -= 100.0;
-                        }
-
-                        // ISOLATED PAWN
-                        isolated &= !(other.getY() + 1 == p.getY() || other.getY() - 1 == p.getY());
-
-                    }
-                }
 
                 scndIter = board.pieces.iterator();
 
@@ -1072,11 +1067,169 @@ public class Minimax extends AppCompatActivity
                     p.setX(x);
                 }
 
-                // ISOLATED PAWN PENALTY
-                if (isolated)
-                    score -= 50.0;
+//                // ISOLATED PAWN PENALTY
+//                if (isolated)
+//                    score -= 50.0;
 
             }
+        }
+
+        boolean[] isolated = new boolean[2];
+
+        for (int i = 0; i < 8; i++)
+        {
+            // DOUBLED (OR MORE) PAWNS PENALTY:
+            if (board.player)
+            {
+                if (pawnStruct[0][i].length() > 0)
+                    score -= 50.0 * (pawnStruct[0][i].length() - 1);
+                if (pawnStruct[1][i].length() > 0)
+                    score += 50.0 * (pawnStruct[1][i].length() - 1);
+            }
+            else
+            {
+                if (pawnStruct[0][i].length() > 0)
+                    score += 50.0 * (pawnStruct[0][i].length() - 1);
+                if (pawnStruct[1][i].length() > 0)
+                    score -= 50.0 * (pawnStruct[1][i].length() - 1);
+            }
+
+            if (pawnStruct[0][i].length() > 0)
+                isolated[0] = true;
+            else
+                isolated[0] = false;
+
+            if (pawnStruct[1][i].length() > 0)
+                isolated[1] = true;
+            else
+                isolated[1] = false;
+
+            // ISOLATED PAWN:
+            if (i >= 1)
+            {
+                if (pawnStruct[0][i - 1].length() > 0)
+                    isolated[0] = false;
+                if (pawnStruct[1][i - 1].length() > 0)
+                    isolated[1] = false;
+            }
+
+            if ( i < 7)
+            {
+                if (pawnStruct[0][i + 1].length() > 0)
+                    isolated[0] = false;
+                if (pawnStruct[1][i + 1].length() > 0)
+                    isolated[1] = false;
+            }
+
+            if (board.player)
+            {
+                if (isolated[0])
+                    score -= 50.0;
+                if (isolated[1])
+                    score += 50.0;
+            }
+            else
+            {
+                if (isolated[0])
+                    score += 50.0;
+                if (isolated[1])
+                    score -= 50.0;
+            }
+
+            // PAWN CHAINS:
+            if (i >= 1)
+            {
+                byte x1, x2;
+                if (pawnStruct[0][i].length() > 0)
+                {
+                    for (int j = 0; j < pawnStruct[0][i].length(); j++)
+                    {
+                        x1 = (byte)((byte)pawnStruct[0][i].charAt(j) - 48);
+                        if (pawnStruct[0][i - 1].length() > 0)
+                        {
+                            for (int k = 0; k < pawnStruct[0][i - 1].length(); k++)
+                            {
+                                x2 = (byte)((byte)pawnStruct[0][i - 1].charAt(k) - 48);
+                                if (x2 - x1 == 1)
+                                {
+                                    if (board.player)
+                                        score += 50.0;
+                                    else
+                                        score -= 50.0;
+                                }
+                            }
+                        }
+                    }
+                }
+                if (pawnStruct[1][i].length() > 0)
+                {
+                    for (int j = 0; j < pawnStruct[1][i].length(); j++)
+                    {
+                        x1 = (byte)((byte)pawnStruct[1][i].charAt(j) - 48);
+                        if (pawnStruct[1][i - 1].length() > 0)
+                        {
+                            for (int k = 0; k < pawnStruct[1][i - 1].length(); k++)
+                            {
+                                x2 = (byte)((byte)pawnStruct[1][i - 1].charAt(k) - 48);
+                                if (x1 - x2 == 1)
+                                {
+                                    if (board.player)
+                                        score -= 50.0;
+                                    else
+                                        score += 50.0;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (i < 7)
+            {
+                byte x1, x2;
+                if (pawnStruct[0][i].length() > 0)
+                {
+                    for (int j = 0; j < pawnStruct[0][i].length(); j++)
+                    {
+                        x1 = (byte)((byte)pawnStruct[0][i].charAt(j) - 48);
+                        if (pawnStruct[0][i + 1].length() > 0)
+                        {
+                            for (int k = 0; k < pawnStruct[0][i + 1].length(); k++)
+                            {
+                                x2 = (byte)((byte)pawnStruct[0][i + 1].charAt(k) - 48);
+                                if (x2 - x1 == 1)
+                                {
+                                    if (board.player)
+                                        score += 50.0;
+                                    else
+                                        score -= 50.0;
+                                }
+                            }
+                        }
+                    }
+                }
+                if (pawnStruct[1][i].length() > 0)
+                {
+                    for (int j = 0; j < pawnStruct[1][i].length(); j++)
+                    {
+                        x1 = (byte)((byte)pawnStruct[1][i].charAt(j) - 48);
+                        if (pawnStruct[1][i + 1].length() > 0)
+                        {
+                            for (int k = 0; k < pawnStruct[1][i + 1].length(); k++)
+                            {
+                                x2 = (byte)((byte)pawnStruct[1][i + 1].charAt(k) - 48);
+                                if (x1 - x2 == 1)
+                                {
+                                    if (board.player)
+                                        score -= 50.0;
+                                    else
+                                        score += 50.0;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
         }
 
         return score;
