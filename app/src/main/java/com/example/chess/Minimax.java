@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.media.session.MediaSession;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -14,6 +15,8 @@ import android.widget.TableRow;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 
 public class Minimax extends AppCompatActivity
@@ -734,10 +737,11 @@ public class Minimax extends AppCompatActivity
         while (iterator.hasNext())
         {
             p = iterator.next();
-            source = new Coord(p.getX(), p.getY());
 
-            if (p.isColour() != board.player)
+            if (p.isColour() != board.player || p.getX() == -1 || p.getY() == -1)
                 continue;
+
+            source = new Coord(p.getX(), p.getY());
 
             if (p instanceof Pawn)
             {
@@ -1284,15 +1288,6 @@ public class Minimax extends AppCompatActivity
 //        double score;
 //        pieces = copyList(pieces);
         ArrayList<Move> possibleMoves = listPossibleMoves(board);
-//        if (isInCheck(player, pieces) && possibleMoves.isEmpty())
-//        {
-//            if (player)
-//                returnValue.score = -1000;
-//            else
-//                returnValue.score = 1000;
-//            return returnValue;
-//        }
-//        else
 
         if (possibleMoves.isEmpty() || maxDepth == 0)
         {
@@ -1310,10 +1305,39 @@ public class Minimax extends AppCompatActivity
             boolean removed = false;
             Piece p = new Piece();
 
+            // BEAM SEARCH:
             for (Move move : possibleMoves)
             {
                 newBoard = board.copyBoard();
-//                ArrayList<Piece> iterationList = copyList(pieces);
+                Iterator<Piece> piecesIterator = newBoard.pieces.iterator();
+                while (piecesIterator.hasNext())
+                {
+                    p = piecesIterator.next();
+                    if (p.getX() == move.source.x && p.getY() == move.source.y)
+                        break;
+                }
+
+                makeMove(newBoard, p, move.target.x, move.target.y);
+
+                move.score = staticEvaluation(newBoard);
+            }
+
+            Collections.sort(possibleMoves);
+
+            int cutIndex;
+
+            if (possibleMoves.size() < 10)
+                cutIndex = possibleMoves.size();
+            else
+                cutIndex  = (int)(possibleMoves.size() / Math.log10(possibleMoves.size()));
+
+            possibleMoves = new ArrayList<>(possibleMoves.subList(0, cutIndex));
+
+            // END OF BEAM SEARCH
+
+            for (Move move : possibleMoves)
+            {
+                newBoard = board.copyBoard();
                 Iterator<Piece> piecesIterator = newBoard.pieces.iterator();
                 while (piecesIterator.hasNext())
                 {
@@ -1445,6 +1469,41 @@ public class Minimax extends AppCompatActivity
             Board newBoard; // = copyList(pieces);
             boolean removed = false;
             Piece p = new Piece();
+
+            // BEAM SEARCH:
+            for (Move move : possibleMoves)
+            {
+                newBoard = board.copyBoard();
+                Iterator<Piece> piecesIterator = newBoard.pieces.iterator();
+                while (piecesIterator.hasNext())
+                {
+                    p = piecesIterator.next();
+                    if (p.getX() == move.source.x && p.getY() == move.source.y)
+                        break;
+                }
+
+                makeMove(newBoard, p, move.target.x, move.target.y);
+
+                move.score = staticEvaluation(newBoard);
+            }
+
+            Collections.sort(possibleMoves);
+
+            int cutIndex;
+
+            if (possibleMoves.size() < 10)
+                cutIndex = possibleMoves.size();
+            else
+                cutIndex  = (int)(possibleMoves.size() / Math.log10(possibleMoves.size()));
+
+            if (possibleMoves.size() - 1 - cutIndex < 0)
+                cutIndex = 0;
+            else
+                cutIndex = possibleMoves.size() - 1 - cutIndex;
+
+            possibleMoves = new ArrayList<>(possibleMoves.subList(cutIndex, possibleMoves.size() - 1));
+
+            // END OF BEAM SEARCH
 
             for (Move move : possibleMoves)
             {
@@ -1852,7 +1911,7 @@ public class Minimax extends AppCompatActivity
     }
 
 
-    public static class Move
+    public static class Move implements Comparable<Move>
     {
         public Coord source;
         public Coord target;
@@ -1874,6 +1933,17 @@ public class Minimax extends AppCompatActivity
             this.source = source;
             this.target = target;
             this.score = score;
+        }
+
+        @Override
+        public int compareTo(Move t)
+        {
+            if (this.score == t.score)
+                return 0;
+            if (this.score > t.score)
+                return 1;
+
+            return -1;
         }
     }
 
@@ -1930,6 +2000,84 @@ public class Minimax extends AppCompatActivity
             return copied;
         }
 
+        public void fromString(String representation)
+        {
+            String[] rows = representation.split(";");
+            // TODO: Finish this!
+        }
+
+        public String toString()
+        {
+            String representation = "";
+            String[][] board = new String[8][8];
+
+            for (int i = 0; i < 8; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    board[i][j] = "--";
+                }
+            }
+
+            for (Piece p: this.pieces)
+            {
+                if (p.getX() == -1 || p.getY() == -1)
+                    continue;
+
+                if (p.isColour())
+                {
+                    board[p.getX()][p.getY()] = "W";
+                }
+                else
+                {
+                    board[p.getX()][p.getY()] = "B";
+                }
+
+                if (p instanceof Pawn)
+                {
+                    board[p.getX()][p.getY()] += "p";
+                }
+                else if (p instanceof Bishop)
+                {
+                    board[p.getX()][p.getY()] += "b";
+                }
+                else if (p instanceof Knight)
+                {
+                    board[p.getX()][p.getY()] += "n";
+                }
+                else if (p instanceof Queen)
+                {
+                    board[p.getX()][p.getY()] += "q";
+                }
+                else if (p instanceof Rook)
+                {
+                    if (((Rook) p).moved)
+                        board[p.getX()][p.getY()] += "R";
+                    else
+                        board[p.getX()][p.getY()] += "r";
+                }
+                else if (p instanceof King)
+                {
+                    if (((King) p).moved)
+                        board[p.getX()][p.getY()] += "K";
+                    else
+                        board[p.getX()][p.getY()] += "k";
+                }
+            }
+
+            board[enPassantPosition.getX()][enPassantPosition.getY()] = "eP";
+
+            for (int i = 0; i < 8; i++)
+            {
+                for (int j = 0; j < 7; j++)
+                {
+                    representation += board[i][j] + ",";
+                }
+                representation += board[i][7] + ";";
+            }
+
+            return representation;
+        }
     }
 }
 
