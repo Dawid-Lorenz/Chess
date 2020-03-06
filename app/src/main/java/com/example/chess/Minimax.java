@@ -2000,10 +2000,63 @@ public class Minimax extends AppCompatActivity
             return copied;
         }
 
-        public void fromString(String representation)
+        private void fromString(String representation)
         {
             String[] rows = representation.split(";");
-            // TODO: Finish this!
+
+            String[] cols;
+
+            Piece p;
+            boolean colour;
+
+            for (byte i = 0; i < 8; i++)
+            {
+                cols = rows[i].split(",");
+                for (byte j = 0; j < 8; j++)
+                {
+                    if (cols[j].equals("--"))
+                        continue;
+                    else
+                    {
+                        colour = cols[j].charAt(0) == 'W';
+
+                        if (cols[j].charAt(1) == 'b')
+                        {
+                            p = new Bishop(i, j, colour);
+                        }
+                        else if (cols[j].charAt(1) == 'n')
+                        {
+                            p = new Knight(i, j, colour);
+                        }
+                        else if (cols[j].charAt(1) == 'q')
+                        {
+                            p = new Queen(i, j, colour);
+                        }
+                        else if (cols[j].charAt(1) == 'r')
+                        {
+                            p = new Rook(i, j, colour);
+                        }
+                        else if (cols[j].charAt(1) == 'R')
+                        {
+                            p = new Rook(i, j, colour, true);
+                        }
+                        else if (cols[j].charAt(1) == 'k')
+                        {
+                            p = new King(i, j, colour);
+                        }
+                        else if (cols[j].charAt(1) == 'K')
+                        {
+                            p = new King(i, j, colour, true);
+                        }
+                        else
+                        {
+                            p = new Pawn(i, j, colour);
+                        }
+
+                        pieces.add(p);
+                    }
+                }
+            }
         }
 
         public String toString()

@@ -13,6 +13,8 @@ public class King extends Piece {
         super(x,y,colour);
     }
 
+    public King(byte x, byte y, boolean colour, boolean moved) {super(x, y, colour); this.moved = moved;}
+
     @Override
     public int getValue()
     {

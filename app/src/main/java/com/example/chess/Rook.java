@@ -13,6 +13,8 @@ public class Rook extends Piece {
         super(x, y, colour);
     }
 
+    public Rook(byte x, byte y, boolean colour, boolean moved) {super(x, y, colour); this.moved = moved;}
+
     @Override
     public int getValue()
     {
