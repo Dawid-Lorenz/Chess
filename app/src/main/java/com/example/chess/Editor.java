@@ -395,9 +395,4 @@ public class Editor extends AppCompatActivity
 
     }
 
-    public static class Library
-    {
-        // TODO
-    }
-
 }

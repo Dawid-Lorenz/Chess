@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.Random;
 
 public class Minimax extends AppCompatActivity
 {
@@ -108,7 +109,9 @@ public class Minimax extends AppCompatActivity
 //    boolean player = true;
 
     Board board;
-
+    Tree library;
+    Move lastMove = null;
+    int MAX_DEPTH = 2;
 
     protected static void updateTheBoard(Board board, ImageButton[][] boardButtons)
     {
@@ -796,6 +799,11 @@ public class Minimax extends AppCompatActivity
                     possibleMoves.add(new Move(source, new Coord(p.getX() + 1, p.getY())));
                 if (isMoveLegal(board, p, (byte) (p.getX() + 1), (byte) (p.getY() + 1)))
                     possibleMoves.add(new Move(source, new Coord(p.getX() + 1, p.getY() + 1)));
+
+                if (!((King) p).moved)
+                {
+                    //TODO castling!!!
+                }
             }
             else
             {
@@ -834,6 +842,13 @@ public class Minimax extends AppCompatActivity
         return possibleMoves;
     }
 
+    // CHESS EVALUATION VALUES:
+    static double CHECKMATE = 10000.0;
+    static double BACKWARD_PAWN = 20.0;
+    static double DOUBLED = 15.0;
+    static double ISOLATED = 25.0;
+    static double PAWN_CHAIN = 10.0;
+
     protected static double staticEvaluation(Board board)
     {
         double score = 0.0;
@@ -858,9 +873,9 @@ public class Minimax extends AppCompatActivity
         if (isInCheck(board.player, board.pieces) && moves.isEmpty())
         {
             if (board.player)
-                return -10000.0;
+                return -CHECKMATE;
             else
-                return 10000.0;
+                return CHECKMATE;
         }
 
         /*
@@ -935,6 +950,19 @@ public class Minimax extends AppCompatActivity
                 }
 
             }
+        }
+
+        iterator = board.pieces.iterator();
+
+        while(iterator.hasNext())
+        {
+            p = iterator.next();
+
+            if (p.getDefense() < 0)
+                if (p.isColour())
+                    score -= p.getValue() / 2.0;
+                else
+                    score += p.getValue() / 2.0;
         }
 
         /*
@@ -1064,7 +1092,7 @@ public class Minimax extends AppCompatActivity
 
                     // BACKWARD PAWN PENALTY:
                     if (sentryFound && !advanceProtected)
-                        score -= 50.0;
+                        score -= BACKWARD_PAWN;
 
 
                     // reset position
@@ -1086,16 +1114,16 @@ public class Minimax extends AppCompatActivity
             if (board.player)
             {
                 if (pawnStruct[0][i].length() > 0)
-                    score -= 50.0 * (pawnStruct[0][i].length() - 1);
+                    score -= DOUBLED * (pawnStruct[0][i].length() - 1);
                 if (pawnStruct[1][i].length() > 0)
-                    score += 50.0 * (pawnStruct[1][i].length() - 1);
+                    score += DOUBLED * (pawnStruct[1][i].length() - 1);
             }
             else
             {
                 if (pawnStruct[0][i].length() > 0)
-                    score += 50.0 * (pawnStruct[0][i].length() - 1);
+                    score += DOUBLED * (pawnStruct[0][i].length() - 1);
                 if (pawnStruct[1][i].length() > 0)
-                    score -= 50.0 * (pawnStruct[1][i].length() - 1);
+                    score -= DOUBLED * (pawnStruct[1][i].length() - 1);
             }
 
             if (pawnStruct[0][i].length() > 0)
@@ -1128,16 +1156,16 @@ public class Minimax extends AppCompatActivity
             if (board.player)
             {
                 if (isolated[0])
-                    score -= 50.0;
+                    score -= ISOLATED;
                 if (isolated[1])
-                    score += 50.0;
+                    score += ISOLATED;
             }
             else
             {
                 if (isolated[0])
-                    score += 50.0;
+                    score += ISOLATED;
                 if (isolated[1])
-                    score -= 50.0;
+                    score -= ISOLATED;
             }
 
             // PAWN CHAINS:
@@ -1178,9 +1206,9 @@ public class Minimax extends AppCompatActivity
                                 if (x1 - x2 == 1)
                                 {
                                     if (board.player)
-                                        score -= 50.0;
+                                        score -= PAWN_CHAIN;
                                     else
-                                        score += 50.0;
+                                        score += PAWN_CHAIN;
                                 }
                             }
                         }
@@ -1203,9 +1231,9 @@ public class Minimax extends AppCompatActivity
                                 if (x2 - x1 == 1)
                                 {
                                     if (board.player)
-                                        score += 50.0;
+                                        score += PAWN_CHAIN;
                                     else
-                                        score -= 50.0;
+                                        score -= PAWN_CHAIN;
                                 }
                             }
                         }
@@ -1224,9 +1252,9 @@ public class Minimax extends AppCompatActivity
                                 if (x1 - x2 == 1)
                                 {
                                     if (board.player)
-                                        score -= 50.0;
+                                        score -= PAWN_CHAIN;
                                     else
-                                        score += 50.0;
+                                        score += PAWN_CHAIN;
                                 }
                             }
                         }
@@ -1329,9 +1357,15 @@ public class Minimax extends AppCompatActivity
             if (possibleMoves.size() < 10)
                 cutIndex = possibleMoves.size();
             else
-                cutIndex  = (int)(possibleMoves.size() / Math.log10(possibleMoves.size()));
+                cutIndex  = (int)(possibleMoves.size() / (1 * Math.log10(possibleMoves.size())));
 
-            possibleMoves = new ArrayList<>(possibleMoves.subList(0, cutIndex));
+            if (possibleMoves.size() - 1 - cutIndex < 0)
+                cutIndex = 0;
+            else
+                cutIndex = possibleMoves.size() - 1 - cutIndex;
+
+            possibleMoves = new ArrayList<>(possibleMoves.subList(cutIndex, possibleMoves.size()));
+
 
             // END OF BEAM SEARCH
 
@@ -1494,14 +1528,9 @@ public class Minimax extends AppCompatActivity
             if (possibleMoves.size() < 10)
                 cutIndex = possibleMoves.size();
             else
-                cutIndex  = (int)(possibleMoves.size() / Math.log10(possibleMoves.size()));
+                cutIndex  = (int)(possibleMoves.size() / (1 * Math.log10(possibleMoves.size())));
 
-            if (possibleMoves.size() - 1 - cutIndex < 0)
-                cutIndex = 0;
-            else
-                cutIndex = possibleMoves.size() - 1 - cutIndex;
-
-            possibleMoves = new ArrayList<>(possibleMoves.subList(cutIndex, possibleMoves.size() - 1));
+            possibleMoves = new ArrayList<>(possibleMoves.subList(0, cutIndex));
 
             // END OF BEAM SEARCH
 
@@ -1643,6 +1672,7 @@ public class Minimax extends AppCompatActivity
         setContentView(R.layout.activity_minimax);
 
         board = new Board();
+        library = new Tree();
 
         // adding Kings to the boardButtons
         String tempPos = "e8";
@@ -1740,6 +1770,24 @@ public class Minimax extends AppCompatActivity
                             Piece selected = board.selected;
                             if (isMoveLegal(board, selected, tempX, tempY))
                             {
+                                lastMove = new Move(new Coord(selected.getX(), selected.getY()), new Coord(tempX, tempY));
+                                if (library != null)
+                                {
+                                    boolean found = false;
+                                    for (Node n: library.root.children)
+                                    {
+                                        if (n.move.equals(lastMove))
+                                        {
+                                            library.root = n;
+                                            found = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!found)
+                                    {
+                                        library = null;
+                                    }
+                                }
                                 makeMove(board, selected, tempX, tempY);
 
                                 board.player = !board.player;
@@ -1824,10 +1872,39 @@ public class Minimax extends AppCompatActivity
                                        @Override
                                        public void onClick(View v)
                                        {
+                                           Move answer;
+                                           if (lastMove == null && library != null)
+                                           {
+                                               if (library.root.children.size() == 0)
+                                               {
+                                                   library = null;
+                                                   answer = alfaBeta(board, MAX_DEPTH, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                               }
+                                               else
+                                               {
+                                                   int index = new Random().nextInt(library.root.children.size());
+                                                   library.root = library.root.children.get(index);
+                                                   answer = library.root.move;
+                                                   lastMove = null;
+                                               }
+                                           }
+                                           else
+                                           {
+                                               if (library != null)
+                                               {
+                                                   int index = new Random().nextInt(library.root.children.size());
+                                                   library.root = library.root.children.get(index);
+                                                   answer = library.root.move;
+                                                   lastMove = null;
+                                               }
+                                               else
+                                               {
+                                                   answer = alfaBeta(board, MAX_DEPTH, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                   lastMove = null;
+                                               }
+                                           }
 
-                                           Move answer = alfaBeta(board, 2, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-
-                                           ArrayList<Move> moves = listPossibleMoves(board);
+//                                           ArrayList<Move> moves = listPossibleMoves(board);
 
                                            if (answer.source.x == -1)
                                            {
@@ -1935,6 +2012,13 @@ public class Minimax extends AppCompatActivity
             this.score = score;
         }
 
+        public boolean equals(Move t)
+        {
+            if (t == null)
+                return false;
+            return this.source.equals(t.source) && this.target.equals(t.target);
+        }
+
         @Override
         public int compareTo(Move t)
         {
@@ -1957,6 +2041,11 @@ public class Minimax extends AppCompatActivity
         {
             this.x = (byte)x;
             this.y = (byte)y;
+        }
+
+        public boolean equals(Coord c)
+        {
+            return this.x == c.x && this.y == c.y;
         }
     }
 
@@ -2132,6 +2221,433 @@ public class Minimax extends AppCompatActivity
             return representation;
         }
     }
+
+    public static class Tree
+    {
+        public Node root;
+
+        public Tree()
+        {
+            root = new Node();
+            // ADD KNOWN OPENINGS HERE:
+
+            Node adder, parent;
+            boolean found = false;
+            // Italian Defence:
+            // e4
+            parent = root;
+            adder = new Node();
+            adder.move = new Move(new Coord(6, 4), new Coord(4, 4));
+            parent.children.add(adder);
+            parent = adder;
+            // e5
+            adder = new Node();
+            adder.move = new Move(new Coord(1, 4), new Coord(3, 4));
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // Nf3
+            adder = new Node();
+            adder.move = new Move(new Coord(7, 6), new Coord(5, 5));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // Nc6
+            adder = new Node();
+            adder.move = new Move(new Coord(0, 1), new Coord(2, 2));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // Bc4
+            adder = new Node();
+            adder.move = new Move(new Coord(7, 5), new Coord(4, 2));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // Bc5
+            adder = new Node();
+            adder.move = new Move(new Coord(0, 5), new Coord(3, 2));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // c3
+            adder = new Node();
+            adder.move = new Move(new Coord(6, 2), new Coord(5, 2));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // Nf6
+            adder = new Node();
+            adder.move = new Move(new Coord(0, 6), new Coord(2, 5));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // d3
+            adder = new Node();
+            adder.move = new Move(new Coord(6, 3), new Coord(5, 3));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // d6
+            adder = new Node();
+            adder.move = new Move(new Coord(1, 3), new Coord(2, 3));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // 0-0
+            adder = new Node();
+            adder.move = new Move(new Coord(7, 4), new Coord(7, 6));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // h6
+            adder = new Node();
+            adder.move = new Move(new Coord(1, 7), new Coord(2, 7));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+
+            // End of Italian Defence
+
+            // Sicilian Defence
+            parent = root;
+
+            // e4
+            adder = new Node();
+            adder.move = new Move(new Coord(6, 4), new Coord(4, 4));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+
+            // c5
+            adder = new Node();
+            adder.move = new Move(new Coord(1, 2), new Coord(3, 2));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+                found = false;
+            }
+
+            // Nf3
+            adder = new Node();
+            adder.move = new Move(new Coord(7, 6), new Coord(5, 5));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+
+            // d6
+            adder = new Node();
+            adder.move = new Move(new Coord(1, 3), new Coord(2, 3));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+
+            // d4
+            adder = new Node();
+            adder.move = new Move(new Coord(6, 3), new Coord(4, 3));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+
+            // cxd4
+            adder = new Node();
+            adder.move = new Move(new Coord(3, 2), new Coord(4, 3));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // Nxd4
+            adder = new Node();
+            adder.move = new Move(new Coord(5, 5), new Coord(4, 3));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // Nf6
+            adder = new Node();
+            adder.move = new Move(new Coord(0, 6), new Coord(2, 5));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // Nc3
+            adder = new Node();
+            adder.move = new Move(new Coord(7, 1), new Coord(5, 2));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // a6
+            adder = new Node();
+            adder.move = new Move(new Coord(1, 0), new Coord(2, 0));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+
+
+            // End of Sicilian Defence
+
+            //
+        }
+    }
+
+    public static class Node
+    {
+        public Move move;
+        public ArrayList<Node> children;
+
+        public Node()
+        {
+            children = new ArrayList<>();
+        }
+    }
+
 }
 
 

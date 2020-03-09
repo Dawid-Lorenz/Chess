@@ -407,7 +407,7 @@ public class Player extends AppCompatActivity {
     }
 
     private void makeMove(ArrayList<Piece> pieces, byte tempX, byte tempY)
-    { // TODO promotion (somewhere xD)
+    {
         boolean resetEnPassant = true;
 
         byte x = tempX;
