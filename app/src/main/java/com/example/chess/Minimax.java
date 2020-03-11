@@ -802,7 +802,20 @@ public class Minimax extends AppCompatActivity
 
                 if (!((King) p).moved)
                 {
-                    //TODO castling!!!
+                    for (Piece rook : board.pieces)
+                    {
+                        if (rook instanceof Rook && rook.isColour() == p.isColour())
+                        {
+                            if (!((Rook) rook).moved)
+                            {
+                                byte side = (byte)(rook.getY() == 0 ? 2 : 6);
+                                Coord kingTarget = new Coord(p.getX(), side);
+                                if (isMoveLegal(board, p, p.getX(), side))
+                                    possibleMoves.add(new Move(source, kingTarget));
+                            }
+                        }
+                    }
+
                 }
             }
             else
@@ -2231,9 +2244,9 @@ public class Minimax extends AppCompatActivity
             root = new Node();
             // ADD KNOWN OPENINGS HERE:
 
-            Node adder, parent;
+            Node adder, parent, breakpoint;
             boolean found = false;
-            // Italian Defence:
+            // Italian Game:
             // e4
             parent = root;
             adder = new Node();
@@ -2438,9 +2451,9 @@ public class Minimax extends AppCompatActivity
                 parent = adder;
             }
 
-            // End of Italian Defence
+            // End of Italian Game
 
-            // Sicilian Defence
+            // Sicilian Defense
             parent = root;
 
             // e4
@@ -2631,9 +2644,662 @@ public class Minimax extends AppCompatActivity
             }
 
 
-            // End of Sicilian Defence
+            // End of Sicilian Defense
 
-            //
+            // French Defense A
+
+            parent = root;
+
+            // e4
+            adder = new Node();
+            adder.move = new Move(new Coord(6, 4), new Coord(4, 4));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+
+            // e6
+            adder = new Node();
+            adder.move = new Move(new Coord(1, 4), new Coord(2, 4));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // d4
+            adder = new Node();
+            adder.move = new Move(new Coord(6, 3), new Coord(4, 3));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // d5
+            adder = new Node();
+            adder.move = new Move(new Coord(1, 3), new Coord(3, 3));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+
+            // Nc3
+            adder = new Node();
+            adder.move = new Move(new Coord(7, 1), new Coord(5, 2));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+
+            // two moves:
+
+            breakpoint = parent;
+
+            // Bb4
+            adder = new Node();
+            adder.move = new Move(new Coord(0, 5), new Coord(4, 1));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+
+            // e5
+            adder = new Node();
+            adder.move = new Move(new Coord(4, 4), new Coord(3, 4));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // c5
+            adder = new Node();
+            adder.move = new Move(new Coord(1, 2), new Coord(3, 2));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // a3
+            adder = new Node();
+            adder.move = new Move(new Coord(6, 0), new Coord(5, 0));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+
+            // The other move subtree:
+
+            parent = breakpoint;
+
+            // Nf6
+            adder = new Node();
+            adder.move = new Move(new Coord(0, 6), new Coord(2, 5));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+
+            // two moves again:
+
+            breakpoint = parent;
+
+            // e5
+            adder = new Node();
+            adder.move = new Move(new Coord(4, 4), new Coord(3, 4));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+
+            // Nd7
+            adder = new Node();
+            adder.move = new Move(new Coord(2, 5), new Coord(1, 3));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+
+
+            // end of breakpoint:
+
+            parent = breakpoint;
+
+            // Bg5
+            adder = new Node();
+            adder.move = new Move(new Coord(7, 2), new Coord(3, 6));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+
+            // dxe4
+            adder = new Node();
+            adder.move = new Move(new Coord(3, 3), new Coord(4, 4));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // Nxe4
+            adder = new Node();
+            adder.move = new Move(new Coord(5, 2), new Coord(4, 4));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+
+            // Be7
+            adder = new Node();
+            adder.move = new Move(new Coord(0, 5), new Coord(1, 4));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+
+            // End of French Defense B
+
+            // The Ruy Lopez
+
+            parent = root;
+
+            // e4
+            adder = new Node();
+            adder.move = new Move(new Coord(6, 4), new Coord(4, 4));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // e5
+            adder = new Node();
+            adder.move = new Move(new Coord(1, 4), new Coord(3, 4));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // Nf3
+            adder = new Node();
+            adder.move = new Move(new Coord(7, 6), new Coord(5, 5));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // Nc6
+            adder = new Node();
+            adder.move = new Move(new Coord(0, 1), new Coord(2, 2));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // Bb5
+            adder = new Node();
+            adder.move = new Move(new Coord(7, 5), new Coord(3, 1));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // a6
+            adder = new Node();
+            adder.move = new Move(new Coord(1, 0), new Coord(2, 0));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // Ba4
+            adder = new Node();
+            adder.move = new Move(new Coord(3, 1), new Coord(4, 0));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+
+            // Nf6
+            adder = new Node();
+            adder.move = new Move(new Coord(0, 6), new Coord(2, 5));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // 0-0
+            adder = new Node();
+            adder.move = new Move(new Coord(7, 4), new Coord(7, 6));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+
+            // End of the Ruy Lopez
+
+            // Slav Defense
+
+            parent = root;
+
+            // d4
+            adder = new Node();
+            adder.move = new Move(new Coord(6, 3), new Coord(4, 3));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // d5
+            adder = new Node();
+            adder.move = new Move(new Coord(1, 3), new Coord(3, 3));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // c4
+            adder = new Node();
+            adder.move = new Move(new Coord(6, 2), new Coord(4, 2));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // c6
+            adder = new Node();
+            adder.move = new Move(new Coord(1, 2), new Coord(2, 2));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // Nf3
+            adder = new Node();
+            adder.move = new Move(new Coord(7, 6), new Coord(5, 5));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // Nf6
+            adder = new Node();
+            adder.move = new Move(new Coord(0, 6), new Coord(2, 5));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // cxd5
+            adder = new Node();
+            adder.move = new Move(new Coord(4, 2), new Coord(3, 3));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+            // cxd5
+            adder = new Node();
+            adder.move = new Move(new Coord(2, 2), new Coord(3, 3));
+            found = false;
+            for (Node child : parent.children)
+            {
+                if (child.move.equals(adder.move))
+                {
+                    found = true;
+                    parent = child;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                parent.children.add(adder);
+                parent = adder;
+            }
+
+            // End of Slav Defense
+
+
         }
     }
 

@@ -703,7 +703,7 @@ public class Player extends AppCompatActivity {
                                         new AlertDialog.Builder(Player.this)
                                                 .setTitle("Game over")
                                                 .setMessage(message)
-                                                .setNeutralButton("Show the boardButtons", new DialogInterface.OnClickListener() {
+                                                .setNeutralButton("Show the board", new DialogInterface.OnClickListener() {
                                                     public void onClick(DialogInterface dialog, int which) {
                                                         dialog.dismiss();
                                                     }
@@ -720,7 +720,7 @@ public class Player extends AppCompatActivity {
                                     new AlertDialog.Builder(Player.this)
                                             .setTitle("Game over")
                                             .setMessage("Stalemate!")
-                                            .setNeutralButton("Show the boardButtons", new DialogInterface.OnClickListener() {
+                                            .setNeutralButton("Show the board", new DialogInterface.OnClickListener() {
                                                 public void onClick(DialogInterface dialog, int which) {
                                                     dialog.dismiss();
                                                 }

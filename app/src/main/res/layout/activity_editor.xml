@@ -647,18 +647,18 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="272dp"
         android:layout_marginLeft="272dp"
-        android:layout_marginBottom="52dp"
+        android:layout_marginBottom="24dp"
         android:text="Make a move!"
         app:layout_constraintBottom_toTopOf="@+id/board"
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/evalBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginTop="60dp"
+        android:layout_width="120dp"
+        android:layout_height="46dp"
+        android:layout_marginStart="272dp"
+        android:layout_marginLeft="272dp"
+        android:layout_marginTop="16dp"
         android:text="Evaluate"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -669,7 +669,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="148dp"
         android:layout_marginLeft="148dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="4dp"
         android:text="Pawn"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/colourBtn" />
@@ -678,18 +678,18 @@
         android:id="@+id/colourBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="40dp"
-        android:layout_marginLeft="40dp"
+        android:layout_marginStart="44dp"
+        android:layout_marginLeft="44dp"
         android:text="White"
-        app:layout_constraintStart_toEndOf="@+id/evalBtn"
+        app:layout_constraintStart_toEndOf="@id/modeBtn"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/removeBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="141dp"
-        android:layout_marginLeft="141dp"
+        android:layout_marginStart="148dp"
+        android:layout_marginLeft="148dp"
         android:layout_marginTop="4dp"
         android:text="Remove"
         app:layout_constraintStart_toStartOf="parent"
@@ -701,6 +701,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginLeft="16dp"
+        android:layout_marginTop="52dp"
         android:text="Editing"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
