@@ -201,7 +201,7 @@ public class Player extends AppCompatActivity {
         return false;
     }
 
-    private boolean isMoveLegal(boolean player, @org.jetbrains.annotations.NotNull Piece p, ArrayList<Piece> pieces, byte x, byte y)
+    private boolean isMoveLegal(boolean player, Piece p, ArrayList<Piece> pieces, byte x, byte y)
     {
         if (p instanceof King)
         {
@@ -535,7 +535,7 @@ public class Player extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
 
-        // adding Kings to the boardButtons
+        // adding Kings to the board
         String tempPos = "e8";
         byte[] coords = toCoord(tempPos);
         kingB = new King(coords[0], coords[1], false);

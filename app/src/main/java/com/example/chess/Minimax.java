@@ -2,6 +2,7 @@ package com.example.chess;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -14,6 +15,9 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -22,8 +26,6 @@ import java.util.Random;
 
 public class Minimax extends AppCompatActivity
 {
-//    ArrayList<Piece> pieces = new ArrayList<>();
-//    ArrayList<Piece> taken = new ArrayList<>();
 
     static double [][] boardValues = {
             {0.5, 1, 1, 1, 1, 1, 1, 0.5},
@@ -101,12 +103,6 @@ public class Minimax extends AppCompatActivity
             };
 
     ImageButton[][] boardButtons = new ImageButton[8][8];
-
-//    Piece nuller = new Piece();
-//    Piece enPassantPosition = nuller;
-//    Piece selected = nuller;
-
-//    boolean player = true;
 
     Board board;
     Tree library;
@@ -806,7 +802,7 @@ public class Minimax extends AppCompatActivity
                     {
                         if (rook instanceof Rook && rook.isColour() == p.isColour())
                         {
-                            if (!((Rook) rook).moved)
+                            if (!((Rook) rook).moved && (rook.getY() == 0 || rook.getY() == 7))
                             {
                                 byte side = (byte)(rook.getY() == 0 ? 2 : 6);
                                 Coord kingTarget = new Coord(p.getX(), side);
@@ -1603,74 +1599,6 @@ public class Minimax extends AppCompatActivity
                 if (alfa >= beta)
                     break;
             }
-
-
-            /*
-            boolean exit;
-            while (piecesIterator.hasNext())
-            {
-                p = piecesIterator.next();
-                for (Piece next : newList)
-                    if (p.getY() == next.getY() && p.getX() == next.getX())
-                    {
-                        p = next;
-                        break;
-                    }
-                exit = false;
-                originalX = p.getX();
-                originalY = p.getY();
-                if (!p.isColour())
-                {
-                    for (byte i = 0; i < 8 && !exit; i++)
-                    {
-                        for (byte j = 0; j < 8 && !exit; j++)
-                        {
-                            if (isMoveLegal(player, p, newList, i, j))
-                            {
-                                if (moveBtn(newList, p, i, j))
-                                    removed = true;
-
-                                returned = alfaBeta(!player, maxDepth - 1, newList, alfa, beta);
-
-                                if (returned < score)
-                                {
-                                    bestPiece = p;
-                                    score = returned;
-                                    bestX = i;
-                                    bestY = j;
-                                }
-
-                                p.setX(originalX);
-                                p.setY(originalY);
-
-                                if (removed)
-                                {
-                                    Piece toAdd = new Piece();
-                                    Iterator<Piece> takenIterator = taken.iterator();
-                                    while (takenIterator.hasNext())
-                                        toAdd = takenIterator.next();
-                                    takenIterator.remove();
-                                    toAdd.setX(i);
-                                    toAdd.setY(j);
-                                    newList.add(toAdd);
-
-//                                pieces.trimToSize();
-//                                taken.trimToSize();
-
-                                    removed = false;
-                                }
-
-                                if (beta > returned)
-                                    beta = returned;
-
-                                if (alfa >= beta)
-                                    exit = true;
-                            }
-                        }
-                    }
-                }
-            }
-            */
         }
 
 
@@ -1685,9 +1613,9 @@ public class Minimax extends AppCompatActivity
         setContentView(R.layout.activity_minimax);
 
         board = new Board();
-        library = new Tree();
+        library = new Tree(Minimax.this);
 
-        // adding Kings to the boardButtons
+        // adding Kings to the board
         String tempPos = "e8";
         byte[] coords = toCoord(tempPos);
         board.pieces.add(new King(coords[0], coords[1], false));
@@ -2238,9 +2166,13 @@ public class Minimax extends AppCompatActivity
     public static class Tree
     {
         public Node root;
+        private Activity activity;
+        private File file;
 
-        public Tree()
+        public Tree(Activity activity)
         {
+            this.activity = activity;
+            file = new File(activity.getFilesDir(), "library.txt");
             root = new Node();
             // ADD KNOWN OPENINGS HERE:
 
@@ -2248,6 +2180,7 @@ public class Minimax extends AppCompatActivity
             boolean found = false;
             // Italian Game:
             // e4
+
             parent = root;
             adder = new Node();
             adder.move = new Move(new Coord(6, 4), new Coord(4, 4));
@@ -3299,7 +3232,115 @@ public class Minimax extends AppCompatActivity
 
             // End of Slav Defense
 
+            readLibraryFile();
+        }
 
+        public void readLibraryFile()
+        {
+            try
+            {
+                FileReader reader = new FileReader(file);
+
+                Node adder, parent = root;
+                boolean found;
+
+                int nextVal;
+                byte sx, sy, tx, ty;
+                char c;
+                nextVal = reader.read();
+                do
+                {
+                    found = false;
+                    sx = (byte) (nextVal - 48);
+                    nextVal = reader.read();
+                    sy = (byte) (nextVal - 48);
+                    nextVal = reader.read();
+                    tx = (byte) (nextVal - 48);
+                    nextVal = reader.read();
+                    ty = (byte) (nextVal - 48);
+
+                    c = (char) reader.read();
+                    if (c == ',')
+                    {
+                        adder = new Node();
+                        adder.move = new Move(new Coord(sx, sy), new Coord(tx, ty));
+
+                        for (Node child : parent.children)
+                        {
+                            if (child.move.equals(adder.move))
+                            {
+                                found = true;
+                                parent = child;
+                                break;
+                            }
+                        }
+                        if (!found)
+                        {
+                            parent.children.add(adder);
+                            parent = adder;
+                        }
+                    }
+                    else if (c == ';')
+                    {
+                        adder = new Node();
+                        adder.move = new Move(new Coord(sx, sy), new Coord(tx, ty));
+
+                        for (Node child : parent.children)
+                        {
+                            if (child.move.equals(adder.move))
+                            {
+                                found = true;
+                                parent = child;
+                                break;
+                            }
+                        }
+                        if (!found)
+                        {
+                            parent.children.add(adder);
+                        }
+                        parent = root;
+                        c = (char) reader.read();
+                        if (c != '\n' && c != '\r')
+                            throw new Exception("New line not found: " + c);
+                    }
+                    else
+                    {
+                        throw new Exception("Unknown character: " + c);
+                    }
+                    nextVal = reader.read();
+                } while(nextVal != -1);
+
+                reader.close();
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        public void writeLibraryFile(ArrayList<Move> opening)
+        {
+            try
+            {
+                FileWriter writer = new FileWriter(file, true);
+                int i = 0;
+                for (Move m : opening)
+                {
+                    writer.write("" + m.source.x);
+                    writer.write("" + m.source.y);
+                    writer.write("" + m.target.x);
+                    writer.write("" + m.target.y);
+                    if (i != opening.size() - 1)
+                        writer.write(',');
+                    i++;
+                }
+                writer.write(";\n");
+                writer.close();
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
         }
     }
 

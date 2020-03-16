@@ -34,7 +34,7 @@
         android:layout_height="69dp"
         android:layout_marginStart="108dp"
         android:layout_marginLeft="108dp"
-        android:layout_marginTop="68dp"
+        android:layout_marginTop="44dp"
         android:text="Player vs Minimax"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/player_btn" />
@@ -45,9 +45,20 @@
         android:layout_height="69dp"
         android:layout_marginStart="108dp"
         android:layout_marginLeft="108dp"
-        android:layout_marginTop="68dp"
+        android:layout_marginTop="44dp"
         android:text="Editor"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/minimaxBtn" />
+
+    <Button
+        android:id="@+id/library"
+        android:layout_width="189dp"
+        android:layout_height="69dp"
+        android:layout_marginStart="108dp"
+        android:layout_marginLeft="108dp"
+        android:layout_marginTop="44dp"
+        android:text="Library creation"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editorBtn" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
