@@ -78,6 +78,7 @@ public class Editor extends AppCompatActivity
                     @Override
                     public void onClick(View v)
                     {
+                        Minimax.Move m = null;
                         if (modeBtn.getText().equals("Editing"))
                             if (board.selected == board.nuller)
                             {
@@ -143,6 +144,8 @@ public class Editor extends AppCompatActivity
                             if (board.selected != board.nuller)
                             {
                                 Piece selected = board.selected;
+                                m = new Minimax.Move(new Minimax.Coord(selected.getX(), selected.getY()),
+                                        new Minimax.Coord(x, y));
                                 if (isMoveLegal(board, selected, x, y))
                                 {
                                     makeMove(board, selected, x, y);
@@ -200,8 +203,6 @@ public class Editor extends AppCompatActivity
                                                 .show();
 
                                 }
-
-
                                 board.selected = board.nuller;
                             }
                             else
@@ -215,11 +216,9 @@ public class Editor extends AppCompatActivity
                                     }
                                 }
                             }
-                            removeTaken(board);
-                            updateTheBoard(board, boardButtons);
                         }
-
-                        updateTheBoard(board, boardButtons);
+                        removeTaken(board);
+                        updateTheBoard(board, boardButtons, m);
                     }
                 });
             }
@@ -274,7 +273,7 @@ public class Editor extends AppCompatActivity
                 if (!(board.selected instanceof King))
                     board.pieces.remove(board.selected);
                 board.selected = board.nuller;
-                updateTheBoard(board, boardButtons);
+                updateTheBoard(board, boardButtons, null);
             }
         });
 
@@ -373,7 +372,7 @@ public class Editor extends AppCompatActivity
                                    .show();
 
                        removeTaken(board);
-                       updateTheBoard(board, boardButtons);
+                       updateTheBoard(board, boardButtons, answer);
                    }
                }
            }
@@ -391,8 +390,7 @@ public class Editor extends AppCompatActivity
         });
 
 
-        updateTheBoard(board, boardButtons);
-
+        updateTheBoard(board, boardButtons, null);
     }
 
 }

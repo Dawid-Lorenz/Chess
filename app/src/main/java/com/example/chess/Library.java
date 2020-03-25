@@ -54,7 +54,7 @@ public class Library extends AppCompatActivity
             }
         }
 
-        updateTheBoard(board, boardButtons);
+        updateTheBoard(board, boardButtons, null);
 
         for (byte i = 0; i < 8; i++)
         {
@@ -68,13 +68,15 @@ public class Library extends AppCompatActivity
                     @Override
                     public void onClick(View v)
                     {
+                        Minimax.Move m = null;
                         if (board.selected != board.nuller)
                         {
                             Piece selected = board.selected;
                             if (isMoveLegal(board, selected, tempX, tempY))
                             {
-                                moves.add(new Minimax.Move(new Minimax.Coord(selected.getX(), selected.getY()),
-                                        new Minimax.Coord(tempX, tempY)));
+                                m = new Minimax.Move(new Minimax.Coord(selected.getX(), selected.getY()),
+                                        new Minimax.Coord(tempX, tempY));
+                                moves.add(m);
 
                                 makeMove(board, selected, tempX, tempY);
 
@@ -146,7 +148,7 @@ public class Library extends AppCompatActivity
                             }
                         }
                         removeTaken(board);
-                        updateTheBoard(board, boardButtons);
+                        updateTheBoard(board, boardButtons, m);
                     }
                 });
             }
@@ -164,7 +166,7 @@ public class Library extends AppCompatActivity
             {
                 tree.writeLibraryFile(moves);
                 setBoardToStartingPositioon();
-                updateTheBoard(board, boardButtons);
+                updateTheBoard(board, boardButtons, null);
             }
         });
 
@@ -174,7 +176,7 @@ public class Library extends AppCompatActivity
             public void onClick(View v)
             {
                 setBoardToStartingPositioon();
-                updateTheBoard(board, boardButtons);
+                updateTheBoard(board, boardButtons, null);
             }
         });
 
