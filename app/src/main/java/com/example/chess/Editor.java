@@ -12,7 +12,6 @@ import android.widget.ImageButton;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.Toast;
-import com.example.chess.Minimax;
 
 import java.util.ArrayList;
 
@@ -34,8 +33,6 @@ public class Editor extends AppCompatActivity
     ImageButton[][] boardButtons = new ImageButton[8][8];
 
     Minimax.Board board;
-
-    int MAX_DEPTH = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -303,8 +300,6 @@ public class Editor extends AppCompatActivity
 
                    Minimax.Move answer = Minimax.alfaBeta(board, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 
-                   ArrayList<Minimax.Move> moves = listPossibleMoves(board);
-
                    if (answer.source.x == -1)
                    {
                        Toast popup = Toast.makeText(getApplicationContext(), "No moves can be made!", Toast.LENGTH_SHORT);
@@ -321,9 +316,6 @@ public class Editor extends AppCompatActivity
                            }
 
                        makeMove(board, movedPiece, answer.target.x, answer.target.y);
-//                                               bestPiece = nuller;
-//                                               bestX = -1;
-//                                               bestY = -1;
 
                        board.player = !board.player;
 

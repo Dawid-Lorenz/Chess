@@ -3,7 +3,7 @@ package com.example.chess;
 public class Piece {
 
     private byte x, y;
-    private boolean colour, selected;
+    private boolean colour;
     private double value;
     private int defense;
     private int attack;
@@ -22,6 +22,11 @@ public class Piece {
         this.y = y;
     }
 
+    public void setValue(double value)
+    {
+        this.value = value;
+    }
+
     public double getValue() {
         return value;
     }
@@ -36,15 +41,6 @@ public class Piece {
 
     public byte getY() {
         return y;
-    }
-
-    public void setSelected(boolean selected) {
-        this.selected = selected;
-    }
-
-    public boolean isSelected()
-    {
-        return selected;
     }
 
     public void setColour(boolean colour) {

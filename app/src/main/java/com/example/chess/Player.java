@@ -23,7 +23,6 @@ public class Player extends AppCompatActivity {
 
     Piece nuller = new Piece();
     Piece enPassantPosition = nuller;
-//    Piece enPassant = new Piece();
     Piece selected = nuller;
 
     boolean player = true;
@@ -154,7 +153,6 @@ public class Player extends AppCompatActivity {
 
                     boolean blocked = false;
 
-//                    if ((diffX > 1 || diffX < -1) && (diffY > 1 || diffY < -1))
                         for (Piece blocker : pieces)
                         {
                             if (blocker != checked && blocker != p)
@@ -309,7 +307,7 @@ public class Player extends AppCompatActivity {
                         biffY = (byte)Math.abs(biffY);
 
 
-                        boolean coordCheck = bx == dx && by == dy; // && biffX < diffX && biffY < diffY;
+                        boolean coordCheck = bx == dx && by == dy;
 
                         if (p instanceof Bishop) {
                             if (biffX == biffY)
@@ -422,7 +420,6 @@ public class Player extends AppCompatActivity {
                 enPassantPosition.setX((byte)5);
                 enPassantPosition.setY(selected.getY());
                 resetEnPassant = false;
-//                                        enPassantPosition.setColour(true);
             }
             else if (!selected.isColour() && selected.getX() == 1 && tempX == 3)
             {
@@ -430,7 +427,6 @@ public class Player extends AppCompatActivity {
                 enPassantPosition.setX((byte)2);
                 enPassantPosition.setY(selected.getY());
                 resetEnPassant = false;
-//                                        enPassantPosition.setColour(false);
             }
             else if (enPassantPosition != nuller && enPassantPosition.getX() == tempX && enPassantPosition.getY() == tempY)
             {
@@ -630,60 +626,6 @@ public class Player extends AppCompatActivity {
                         {
                             if(isMoveLegal(player, selected, pieces, tempX, tempY))
                             {
-
-                                /*
-                                boolean resetEnPassant = true;
-
-                                byte x = tempX;
-                                byte y = tempY;
-
-                                if (selected instanceof Pawn)
-                                {
-                                    if (selected.isColour() && selected.getX() == 6 && tempX == 4)
-                                    {
-                                        enPassantPosition = new Piece();
-                                        enPassantPosition.setX((byte)5);
-                                        enPassantPosition.setY(selected.getY());
-                                        resetEnPassant = false;
-//                                        enPassantPosition.setColour(true);
-                                    }
-                                    else if (!selected.isColour() && selected.getX() == 1 && tempX == 3)
-                                    {
-                                        enPassantPosition = new Piece();
-                                        enPassantPosition.setX((byte)2);
-                                        enPassantPosition.setY(selected.getY());
-                                        resetEnPassant = false;
-//                                        enPassantPosition.setColour(false);
-                                    }
-                                    else if (enPassantPosition != nuller && enPassantPosition.getX() == tempX && enPassantPosition.getY() == tempY)
-                                    {
-                                        if (player)
-                                            x = (byte)3;
-                                        else
-                                            x = (byte)4;
-
-                                    }
-                                }
-
-                                selected.setX(tempX);
-                                selected.setY(tempY);
-
-                                boolean moves = false;
-                                Iterator<Piece> iterator = pieces.iterator();
-                                Piece p;
-                                while (iterator.hasNext())
-                                {
-                                    p = iterator.next();
-                                    if (p != selected && p.getX() == x && p.getY() == y)
-                                    {
-                                        p.setX((byte) -1);
-                                        p.setY((byte) -1);
-                                        break;
-                                    }
-                                }
-                                iterator = pieces.iterator();
-                                */
-
 
                                 makeMove(pieces, tempX, tempY);
 

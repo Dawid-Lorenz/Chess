@@ -27,10 +27,6 @@ public class Library extends AppCompatActivity
     ArrayList<Minimax.Move> moves;
     Minimax.Tree tree;
 
-    boolean player = true;
-
-    King kingW, kingB;
-
     ImageButton[][] boardButtons = new ImageButton[8][8];
 
     Minimax.Board board;

@@ -252,7 +252,6 @@ public class Minimax extends AppCompatActivity
 
                     boolean blocked = false;
 
-//                    if ((diffX > 1 || diffX < -1) && (diffY > 1 || diffY < -1))
                     for (Piece blocker : pieces)
                     {
                         if (blocker != checked && blocker != p)
@@ -314,7 +313,6 @@ public class Minimax extends AppCompatActivity
             if ((board.player && x == 7 || !board.player && x == 0) && (y == 2 || y == 6) && !((King) p).moved && !isInCheck(board.player, board.pieces))
             {
                 byte firstRank = board.player ? (byte) 7 : 0;
-                boolean canCastle = true;
                 Rook rook = new Rook(board.player);
                 Iterator<Piece> iterator = board.pieces.iterator();
                 Piece blocker;
@@ -419,7 +417,7 @@ public class Minimax extends AppCompatActivity
                         biffY = (byte) Math.abs(biffY);
 
 
-                        boolean coordCheck = bx == dx && by == dy; // && biffX < diffX && biffY < diffY;
+                        boolean coordCheck = bx == dx && by == dy;
 
                         if (p instanceof Bishop)
                         {
@@ -536,8 +534,6 @@ public class Minimax extends AppCompatActivity
                 break;
             }
 
-        Piece takenPiece = null;
-
         boolean resetEnPassant = true;
 
         byte x = tempX;
@@ -552,7 +548,6 @@ public class Minimax extends AppCompatActivity
                 board.enPassantPosition.setX((byte) 5);
                 board.enPassantPosition.setY(moving.getY());
                 resetEnPassant = false;
-//                                        enPassantPosition.setColour(true);
             }
             else if (!moving.isColour() && moving.getX() == 1 && tempX == 3)
             {
@@ -560,7 +555,6 @@ public class Minimax extends AppCompatActivity
                 board.enPassantPosition.setX((byte) 2);
                 board.enPassantPosition.setY(moving.getY());
                 resetEnPassant = false;
-//                                        enPassantPosition.setColour(false);
             }
             else if (board.enPassantPosition != board.nuller && board.enPassantPosition.getX() == tempX && board.enPassantPosition.getY() == tempY)
             {
@@ -578,7 +572,6 @@ public class Minimax extends AppCompatActivity
                 // remove the pawn:
                 moving.setX((byte) -1);
                 moving.setY((byte) -1);
-//                pieces.remove(moving);
                 // add the Queen:
                 moving = new Queen(colourSelected);
                 board.pieces.add(moving);
@@ -638,8 +631,6 @@ public class Minimax extends AppCompatActivity
             {
                 p.setX((byte) -1);
                 p.setY((byte) -1);
-                takenPiece = p;
-//                pieces.remove(p);
                 board.taken.add(p);
                 wasRemoved = true;
                 break;
@@ -655,7 +646,6 @@ public class Minimax extends AppCompatActivity
     protected static boolean hasMoves(Board board)
     {
         Piece p;
-//        pieces = copyList(pieces);
         Iterator<Piece> iterator = board.pieces.iterator();
         while (iterator.hasNext())
         {
@@ -735,9 +725,7 @@ public class Minimax extends AppCompatActivity
         ArrayList<Move> possibleMoves = new ArrayList<>();
 
         Piece p;
-        Coord source, target;
-        Move adder;
-//        board.pieces = copyList(board.pieces);
+        Coord source;
         Iterator<Piece> iterator = board.pieces.iterator();
         while (iterator.hasNext())
         {
@@ -870,7 +858,6 @@ public class Minimax extends AppCompatActivity
     protected static double staticEvaluation(Board board)
     {
         double score = 0.0;
-        int white, black;
         Iterator<Piece> iterator;
         Piece p;
         String[][] pawnStruct = new String[2][8];
@@ -1124,7 +1111,6 @@ public class Minimax extends AppCompatActivity
         }
 
         iterator = board.pieces.iterator();
-        // 25.0 for King's move ; 35.0 for Bishop
 
         while(iterator.hasNext())
         {
@@ -1297,7 +1283,6 @@ public class Minimax extends AppCompatActivity
 
         // ROOK ON AN OPEN OR SEMI OPEN FILE:
         iterator = board.pieces.iterator();
-        // -85.0 for King's move ; -41.67 for Bishop
         while (iterator.hasNext())
         {
             p = iterator.next();
@@ -1422,24 +1407,6 @@ public class Minimax extends AppCompatActivity
 
             for (Move move : possibleMoves)
             {
-                /*
-                newBoard = board.copyBoard();
-                Iterator<Piece> piecesIterator = newBoard.pieces.iterator();
-                while (piecesIterator.hasNext())
-                {
-                    p = piecesIterator.next();
-                    if (p.getX() == move.source.x && p.getY() == move.source.y)
-                        break;
-                }
-
-                originalX = p.getX();
-                originalY = p.getY();
-
-                makeMove(newBoard, p, move.target.x, move.target.y);
-
-                newBoard.player = !newBoard.player;
-
-                 */
                 newBoard = savedBoards.get(move.index);
 
                 returned = alfaBeta(newBoard, maxDepth - 1, alfa, beta);
@@ -1512,24 +1479,6 @@ public class Minimax extends AppCompatActivity
 
             for (Move move : possibleMoves)
             {
-                /*
-                newBoard = board.copyBoard();
-                Iterator<Piece> piecesIterator = newBoard.pieces.iterator();
-                while (piecesIterator.hasNext())
-                {
-                    p = piecesIterator.next();
-                    if (p.getX() == move.source.x && p.getY() == move.source.y)
-                        break;
-                }
-
-                originalX = p.getX();
-                originalY = p.getY();
-
-                makeMove(newBoard, p, move.target.x, move.target.y);
-
-                newBoard.player = !newBoard.player;
-                 */
-
                 newBoard = savedBoards.get(move.index);
 
                 returned = alfaBeta(newBoard, maxDepth - 1, alfa, beta);
