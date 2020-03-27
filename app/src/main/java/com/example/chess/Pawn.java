@@ -1,7 +1,7 @@
 package com.example.chess;
 
 public class Pawn extends Piece {
-    private int value = 100;
+    private double value = 100;
     private boolean isPawnProtected = false;
 
     public Pawn(boolean colour) {
@@ -13,7 +13,7 @@ public class Pawn extends Piece {
     }
 
     @Override
-    public int getValue()
+    public double getValue()
     {
         return value;
     }

@@ -35,6 +35,8 @@ public class Editor extends AppCompatActivity
 
     Minimax.Board board;
 
+    int MAX_DEPTH = 2;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -144,10 +146,10 @@ public class Editor extends AppCompatActivity
                             if (board.selected != board.nuller)
                             {
                                 Piece selected = board.selected;
-                                m = new Minimax.Move(new Minimax.Coord(selected.getX(), selected.getY()),
-                                        new Minimax.Coord(x, y));
                                 if (isMoveLegal(board, selected, x, y))
                                 {
+                                    m = new Minimax.Move(new Minimax.Coord(selected.getX(), selected.getY()),
+                                            new Minimax.Coord(x, y));
                                     makeMove(board, selected, x, y);
 
                                     board.player = !board.player;
@@ -202,6 +204,10 @@ public class Editor extends AppCompatActivity
                                                 })
                                                 .show();
 
+                                }
+                                else
+                                {
+                                    m = null;
                                 }
                                 board.selected = board.nuller;
                             }
@@ -295,7 +301,7 @@ public class Editor extends AppCompatActivity
                                        public void onClick(View v)
                                        {
 
-                   Minimax.Move answer = Minimax.alfaBeta(board, 2, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                   Minimax.Move answer = Minimax.alfaBeta(board, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 
                    ArrayList<Minimax.Move> moves = listPossibleMoves(board);
 

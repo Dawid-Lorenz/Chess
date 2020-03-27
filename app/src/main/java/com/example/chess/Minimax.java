@@ -96,6 +96,16 @@ public class Minimax extends AppCompatActivity
                             -10,-20,-20,-20,-20,-20,-20,-10,
                             20, 20,  0,  0,  0,  0, 20, 20,
                             20, 30, 10,  0,  0, 10, 30, 20
+                    },
+                    {// king end game
+                            -50, -40, -30, -20, -20, -30, -40, -50,
+                            -30, -20, -10, 0, 0, -10, -20, -30,
+                            -30, -10, 20, 30, 30, 20, -10, -30,
+                            -30, -10, 30, 40, 40, 30, -10, -30,
+                            -30, -10, 30, 40, 40, 30, -10, -30,
+                            -30, -10, 20, 30, 30, 20, -10, -30,
+                            -30, -30,  0,  0,  0,  0, -30, -30,
+                            -50, -30, -30, -30, -30, -30, -30, -50
                     }
             };
 
@@ -104,7 +114,6 @@ public class Minimax extends AppCompatActivity
     Board board;
     Tree library;
     Move lastMove = null;
-    int MAX_DEPTH = 2;
 
     protected static void updateTheBoard(Board board, ImageButton[][] boardButtons, Move last)
     {
@@ -294,15 +303,9 @@ public class Minimax extends AppCompatActivity
 
     protected static boolean isMoveLegal(Board board, Piece p, byte x, byte y)
     {
-        for (Piece next : board.pieces)
-            if (next.getX() == p.getX() && next.getY() == p.getY())
-            {
-                p = next;
-                break;
-            }
         if (x < 0 || x >= 8 || y < 0 || y >= 8)
             return false;
-//        pieces = copyList(pieces);
+
         if (p instanceof King)
         {
             if (board.player != p.isColour())
@@ -855,12 +858,14 @@ public class Minimax extends AppCompatActivity
     }
 
     // CHESS EVALUATION VALUES:
-    static double CHECKMATE = 10000.0;
+    static double CHECKMATE = 100000.0;
     static double BACKWARD_PAWN = 20.0;
     static double DOUBLED = 15.0;
     static double ISOLATED = 25.0;
     static double PAWN_CHAIN = 10.0;
     static double CONNECTED_ROOKS = 25.0;
+    static double ROOK_OPEN = 25.0;
+    static double ROOK_SEMI = 15.0;
 
     protected static double staticEvaluation(Board board)
     {
@@ -880,7 +885,7 @@ public class Minimax extends AppCompatActivity
         Piece other;
 
         /*
-            CHECKMATE IS WORTH 10000
+            CHECKMATE IS WINNING
          */
         ArrayList<Move> moves = listPossibleMoves(board);
         if (isInCheck(board.player, board.pieces) && moves.isEmpty())
@@ -901,15 +906,21 @@ public class Minimax extends AppCompatActivity
         // resetting defense:
         iterator = board.pieces.iterator();
 
+        int counter = 0;
+
         while (iterator.hasNext())
         {
             p = iterator.next();
             p.setDefense(0);
+            p.setDefense_value(0.0);
+            p.setAttack(0);
+            p.setAttack_value(0.0);
             if (p instanceof Pawn)
                 ((Pawn) p).setPawnProtected(false);
+
+            if (p.getX() != -1 && p.getY() != -1)
+                counter++;
         }
-
-
 
 
         iterator = board.pieces.iterator();
@@ -918,6 +929,10 @@ public class Minimax extends AppCompatActivity
         while (iterator.hasNext())
         {
             p = iterator.next();
+
+            if (p.getX() == -1 || p.getY() == -1)
+                continue;
+
             /*
                 MATERIAL EVALUATION
                 According to Larry Kaufman with slight alteration: B > N
@@ -925,9 +940,9 @@ public class Minimax extends AppCompatActivity
             if (p.getX() != -1 && p.getY() != -1)
             {
                 if (p.isColour())
-                    score += (double)p.getValue();
+                    score += 2 * p.getValue();
                 else
-                    score -= (double)p.getValue();
+                    score -= 2 * p.getValue();
 
                 /*
                     DEFENSE EVALUATION
@@ -938,6 +953,8 @@ public class Minimax extends AppCompatActivity
 
                 while (scndIter.hasNext())
                 {
+                    boolean pl = board.player;
+                    board.player = p.isColour();
                     other = scndIter.next();
                     if (other != p)
                     {
@@ -948,7 +965,7 @@ public class Minimax extends AppCompatActivity
 
                             if (isMoveLegal(board, p, other.getX(), other.getY()))
                             {
-                                other.addDefender();
+                                other.addDefender(p);
                                 if (other instanceof Pawn)
                                     ((Pawn) other).setPawnProtected(true);
                             }
@@ -959,7 +976,7 @@ public class Minimax extends AppCompatActivity
                         else
                         {       // attacker:
                             if (isMoveLegal(board, p, other.getX(), other.getY()))
-                                other.addAttacker();
+                                other.addAttacker(p);
                         }
 
                         /*
@@ -981,6 +998,7 @@ public class Minimax extends AppCompatActivity
                             }
                         }
                     }
+                    board.player = pl;
                 }
 
             }
@@ -988,8 +1006,6 @@ public class Minimax extends AppCompatActivity
             /*
                 PIECE SQUARE TABLES
             */
-            if (p.getX() == -1 || p.getY() == -1)
-                continue;
 
             if (!p.isColour())
             {
@@ -1024,7 +1040,10 @@ public class Minimax extends AppCompatActivity
             }
             else if (p instanceof King)
             {
-                tempScore += pieceSquareTable[5][8*x + y];
+                if (counter > 10)
+                    tempScore += pieceSquareTable[5][8*x + y];
+                else
+                    tempScore += pieceSquareTable[6][8*x + y];
             }
 
             if (p.isColour())
@@ -1105,16 +1124,18 @@ public class Minimax extends AppCompatActivity
         }
 
         iterator = board.pieces.iterator();
+        // 25.0 for King's move ; 35.0 for Bishop
 
         while(iterator.hasNext())
         {
             p = iterator.next();
 
-            if (p.getDefense() < 0)
-                if (p.isColour())
-                    score -= p.getValue() / 2.0;
-                else
-                    score += p.getValue() / 2.0;
+            if (p.getAttack() > 0 && p.getDefense() <= 0
+                || p.getAttack() > 0 && p.getAttack_value() <= p.getDefense_value() + p.getValue())
+                    if (p.isColour())
+                        score -= p.getValue() / 3.0;
+                    else
+                        score += p.getValue() / 3.0;
         }
 
         boolean[] isolated = new boolean[2];
@@ -1272,7 +1293,26 @@ public class Minimax extends AppCompatActivity
                     }
                 }
             }
+        }
 
+        // ROOK ON AN OPEN OR SEMI OPEN FILE:
+        iterator = board.pieces.iterator();
+        // -85.0 for King's move ; -41.67 for Bishop
+        while (iterator.hasNext())
+        {
+            p = iterator.next();
+            if (p.getX() != -1 && p .getY() != -1 && p instanceof Rook)
+            {
+                int sideIndex = p.isColour() ? 0 : 1;
+                int oppositeIndex = p.isColour() ? 1 : 0;
+                if (pawnStruct[sideIndex][p.getY()].length() == 0)
+                    if (pawnStruct[oppositeIndex][p.getY()].length() == 0)
+                        // OPEN FILE
+                        score += ROOK_OPEN;
+                    else
+                        // SEMI OPEN FILE:
+                        score += ROOK_SEMI;
+            }
         }
 
         return score;
@@ -1337,11 +1377,15 @@ public class Minimax extends AppCompatActivity
 
             Board newBoard;
             Piece p = new Piece();
+            ArrayList<Board> savedBoards = new ArrayList<>();
+            int index = 0;
 
             // BEAM SEARCH:
             for (Move move : possibleMoves)
             {
+                move.index = index++;
                 newBoard = board.copyBoard();
+                savedBoards.add(newBoard);
                 Iterator<Piece> piecesIterator = newBoard.pieces.iterator();
                 while (piecesIterator.hasNext())
                 {
@@ -1351,8 +1395,10 @@ public class Minimax extends AppCompatActivity
                 }
 
                 makeMove(newBoard, p, move.target.x, move.target.y);
-
+                newBoard.player = !newBoard.player;
                 move.score = staticEvaluation(newBoard);
+                if (move.score == CHECKMATE)
+                    return move;
             }
 
             Collections.sort(possibleMoves);
@@ -1376,6 +1422,7 @@ public class Minimax extends AppCompatActivity
 
             for (Move move : possibleMoves)
             {
+                /*
                 newBoard = board.copyBoard();
                 Iterator<Piece> piecesIterator = newBoard.pieces.iterator();
                 while (piecesIterator.hasNext())
@@ -1391,6 +1438,9 @@ public class Minimax extends AppCompatActivity
                 makeMove(newBoard, p, move.target.x, move.target.y);
 
                 newBoard.player = !newBoard.player;
+
+                 */
+                newBoard = savedBoards.get(move.index);
 
                 returned = alfaBeta(newBoard, maxDepth - 1, alfa, beta);
 
@@ -1423,11 +1473,15 @@ public class Minimax extends AppCompatActivity
 
             Board newBoard;
             Piece p = new Piece();
+            ArrayList<Board> savedBoards = new ArrayList<>();
+            int index = 0;
 
             // BEAM SEARCH:
             for (Move move : possibleMoves)
             {
+                move.index = index++;
                 newBoard = board.copyBoard();
+                savedBoards.add(newBoard);
                 Iterator<Piece> piecesIterator = newBoard.pieces.iterator();
                 while (piecesIterator.hasNext())
                 {
@@ -1437,8 +1491,10 @@ public class Minimax extends AppCompatActivity
                 }
 
                 makeMove(newBoard, p, move.target.x, move.target.y);
-
+                newBoard.player = !newBoard.player;
                 move.score = staticEvaluation(newBoard);
+                if (move.score == -CHECKMATE)
+                    return move;
             }
 
             Collections.sort(possibleMoves);
@@ -1456,6 +1512,7 @@ public class Minimax extends AppCompatActivity
 
             for (Move move : possibleMoves)
             {
+                /*
                 newBoard = board.copyBoard();
                 Iterator<Piece> piecesIterator = newBoard.pieces.iterator();
                 while (piecesIterator.hasNext())
@@ -1471,6 +1528,9 @@ public class Minimax extends AppCompatActivity
                 makeMove(newBoard, p, move.target.x, move.target.y);
 
                 newBoard.player = !newBoard.player;
+                 */
+
+                newBoard = savedBoards.get(move.index);
 
                 returned = alfaBeta(newBoard, maxDepth - 1, alfa, beta);
 
@@ -1492,9 +1552,38 @@ public class Minimax extends AppCompatActivity
             }
         }
 
-
-
         return returnValue;
+    }
+
+
+    static int ENDGAME_DEPTH = 4;
+    static int NORMAL_DEPTH = 2;
+
+    protected static Move alfaBeta(Board board, double alfa, double beta)
+    {
+        int depth;
+        Piece p;
+        Iterator<Piece> iterator = board.pieces.iterator();
+        int counter = 0;
+
+        while (iterator.hasNext())
+        {
+            p = iterator.next();
+            if (p.getY() != -1 && p.getX() != -1)
+                counter++;
+        }
+
+        if (counter > 12)
+        {
+            depth = NORMAL_DEPTH;
+        }
+        else
+        {
+            depth = ENDGAME_DEPTH;
+        }
+
+
+        return alfaBeta(board, depth, alfa, beta);
     }
 
     @Override
@@ -1675,6 +1764,10 @@ public class Minimax extends AppCompatActivity
                                             .show();
 
                             }
+                            else
+                            {
+                                lastMove = null;
+                            }
 
 
                             board.selected = board.nuller;
@@ -1710,7 +1803,7 @@ public class Minimax extends AppCompatActivity
                                                if (library.root.children.size() == 0)
                                                {
                                                    library = null;
-                                                   answer = alfaBeta(board, MAX_DEPTH, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                   answer = alfaBeta(board, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
                                                }
                                                else
                                                {
@@ -1730,7 +1823,7 @@ public class Minimax extends AppCompatActivity
                                                }
                                                else
                                                {
-                                                   answer = alfaBeta(board, MAX_DEPTH, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                   answer = alfaBeta(board, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
                                                    lastMove = null;
                                                }
                                            }
@@ -1819,6 +1912,7 @@ public class Minimax extends AppCompatActivity
         public Coord source;
         public Coord target;
         public double score;
+        public int index;
 
         public Move()
         {

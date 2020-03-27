@@ -1,7 +1,7 @@
 package com.example.chess;
 
 public class Knight extends Piece {
-    private int value = 330;
+    private double value = 330;
 
     public Knight(boolean colour) {
         super(colour);
@@ -12,7 +12,7 @@ public class Knight extends Piece {
     }
 
     @Override
-    public int getValue()
+    public double getValue()
     {
         return value;
     }

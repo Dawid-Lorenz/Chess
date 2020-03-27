@@ -1,7 +1,7 @@
 package com.example.chess;
 
 public class Queen extends Piece {
-    private int value = 1000;
+    private double value = 1000;
 
     public Queen(boolean colour) {
         super(colour);
@@ -12,7 +12,7 @@ public class Queen extends Piece {
     }
 
     @Override
-    public int getValue()
+    public double getValue()
     {
         return value;
     }

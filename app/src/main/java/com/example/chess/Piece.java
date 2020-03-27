@@ -4,8 +4,11 @@ public class Piece {
 
     private byte x, y;
     private boolean colour, selected;
-    private int value;
+    private double value;
     private int defense;
+    private int attack;
+    private double defense_value;
+    private double attack_value;
 
     public Piece(){}
 
@@ -19,7 +22,7 @@ public class Piece {
         this.y = y;
     }
 
-    public int getValue() {
+    public double getValue() {
         return value;
     }
 
@@ -63,12 +66,40 @@ public class Piece {
 
     public boolean isAttackAllowed(byte x, byte y) {return isMoveAllowed(x,y);}
 
-    public void addDefender() {defense++;}
+    public void addDefender(Piece p) {defense++; defense_value += p.getValue();}
 
-    public void addAttacker() {defense--;}
+    public void addAttacker(Piece p) {attack++; attack_value += p.getValue();}
 
     public int getDefense() {return defense;}
 
     public void setDefense(int defense) {this.defense = defense;}
+
+    public void setDefense_value(double value) {defense_value = value;}
+
+    public double getDefense_value()
+    {
+        return defense_value;
+    }
+
+    public double getAttack_value()
+    {
+        return attack_value;
+    }
+
+    public int getAttack()
+    {
+        return attack;
+    }
+
+    public void setAttack(int attack)
+    {
+        this.attack = attack;
+    }
+
+    public void setAttack_value(double attack_value)
+    {
+        this.attack_value = attack_value;
+    }
+
 }
 

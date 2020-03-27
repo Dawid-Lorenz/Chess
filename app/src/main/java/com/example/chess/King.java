@@ -2,7 +2,7 @@ package com.example.chess;
 
 public class King extends Piece {
 
-    private int value = 10000;
+    private double value = 10000;
     public boolean moved = false;
 
     public King(boolean colour){
@@ -16,7 +16,7 @@ public class King extends Piece {
     public King(byte x, byte y, boolean colour, boolean moved) {super(x, y, colour); this.moved = moved;}
 
     @Override
-    public int getValue()
+    public double getValue()
     {
         return value;
     }
